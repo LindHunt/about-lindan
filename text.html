@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINDAN TRI SAPUTRA | Pentester & OSINT Analyst</title>
+    <!-- Font Awesome 6 (Free Icons) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #050505;
+            color: #e0e0e0;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        :root {
+            --black-bg: #050505;
+            --dark-card: #111111;
+            --border-red: #9b2c2c;
+            --primary-red: #b91c1c;
+            --deep-red: #7f1a1a;
+            --text-light: #f0f0f0;
+            --text-muted: #b0b0b0;
+            --hover-red: #cf3a3a;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        h1, h2, h3, .logo {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            border-left: 5px solid var(--primary-red);
+            padding-left: 1rem;
+            color: #fff;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.75rem;
+            color: #fff;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 0;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #222;
+        }
+
+        .logo h1 {
+            font-size: 1.7rem;
+            background: linear-gradient(135deg, #fff 30%, #b91c1c 80%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .logo span {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: block;
+            font-weight: 400;
+        }
+        .nav-links a {
+            color: #ddd;
+            text-decoration: none;
+            margin-left: 2rem;
+            font-weight: 500;
+            transition: color 0.2s;
+            font-size: 1rem;
+        }
+        .nav-links a:hover {
+            color: var(--primary-red);
+        }
+
+        .hero {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2.5rem;
+            align-items: center;
+            justify-content: space-between;
+            margin: 3rem 0 4rem;
+        }
+        .hero-content {
+            flex: 1;
+        }
+        .hero-badge {
+            color: var(--primary-red);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .hero-content h1 {
+            font-size: 3.2rem;
+            line-height: 1.2;
+            margin-bottom: 0.75rem;
+            color: white;
+        }
+        .hero-titles {
+            font-size: 1.2rem;
+            color: #ccc;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary-red);
+            padding-left: 1rem;
+        }
+        .hero-desc {
+            margin: 1.5rem 0;
+            color: #bdbdbd;
+            max-width: 550px;
+        }
+        .hero-image {
+            flex: 0.8;
+            text-align: center;
+        }
+        .hero-image img {
+            max-width: 100%;
+            width: 260px;
+            height: 260px;
+            object-fit: cover;
+            border-radius: 30px;
+            border: 2px solid var(--border-red);
+            box-shadow: 0 20px 30px -15px rgba(0,0,0,0.6);
+            background: #1a1a1a;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: transparent;
+            border: 1.5px solid var(--primary-red);
+            padding: 0.7rem 1.8rem;
+            font-weight: 600;
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.25s;
+            margin-right: 1rem;
+            margin-top: 0.5rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--primary-red);
+            border-color: var(--primary-red);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--hover-red);
+            border-color: var(--hover-red);
+            transform: translateY(-2px);
+        }
+        .btn-outline:hover {
+            background: rgba(185, 28, 28, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .section {
+            margin: 4rem 0;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.8rem;
+            margin-top: 1rem;
+        }
+        .card {
+            background: var(--dark-card);
+            border-radius: 20px;
+            padding: 1.6rem;
+            border: 1px solid #2a2a2a;
+            transition: 0.2s ease;
+        }
+        .card:hover {
+            border-color: #9b2c2c;
+            background: #151515;
+        }
+        .tools-badge {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+            margin-top: 1rem;
+        }
+        .tool-item {
+            background: #1f1f1f;
+            padding: 0.3rem 0.9rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: #e2e2e2;
+            border-left: 2px solid var(--primary-red);
+        }
+        .skill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-top: 1rem;
+        }
+        .skill-tag {
+            background: #1c1c1c;
+            border-radius: 40px;
+            padding: 0.4rem 1.2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #ddd;
+            transition: 0.1s;
+            border: 1px solid #333;
+        }
+        .skill-tag:hover {
+            border-color: var(--primary-red);
+            color: #fff;
+        }
+        .hof-list {
+            list-style: none;
+            margin-top: 0.5rem;
+        }
+        .hof-list li {
+            margin-bottom: 0.9rem;
+            border-left: 3px solid var(--primary-red);
+            padding-left: 1rem;
+        }
+        .hof-list a {
+            color: #ddd;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .hof-list a:hover {
+            color: var(--primary-red);
+            text-decoration: underline;
+        }
+        .small-note {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 0.5rem;
+        }
+        .social-links {
+            display: flex;
+            gap: 1.8rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .social-icon {
+            font-size: 1.9rem;
+            color: #ccc;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .social-icon:hover {
+            color: var(--primary-red);
+            transform: translateY(-3px);
+        }
+        footer {
+            border-top: 1px solid #1f1f1f;
+            padding: 2rem 0;
+            text-align: center;
+            color: #7a7a7a;
+            font-size: 0.85rem;
+            margin-top: 3rem;
+        }
+        hr {
+            border-color: #222;
+            margin: 1rem 0;
+        }
+        @media (max-width: 780px) {
+            .container {
+                padding: 0 1.5rem;
+            }
+            .navbar {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            .nav-links a {
+                margin: 0 1rem;
+            }
+            .hero {
+                flex-direction: column-reverse;
+                text-align: center;
+            }
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+            .hero-titles {
+                text-align: center;
+                border-left: none;
+                padding-left: 0;
+            }
+            .btn {
+                margin: 0.3rem;
+            }
+            h2 {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="navbar">
+        <div class="logo">
+            <h1>LINDAN TRI SAPUTRA</h1>
+            <span>pentester · osint analyst</span>
+        </div>
+        <div class="nav-links">
+            <a href="#about">Tentang</a>
+            <a href="#skills">Skill</a>
+            <a href="#tools">Tools</a>
+            <a href="#achievements">Penghargaan</a>
+            <a href="#contact">Kontak</a>
+        </div>
+    </div>
+
+    <div class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">PENTESTER | OSINT ANALYST</div>
+            <h1>LINDAN<br>TRI SAPUTRA</h1>
+            <div class="hero-titles">LINDAN / PUTRA</div>
+            <div class="hero-desc">
+                Seorang Pentester Website dan OSINT Analyst. Fokus pada keamanan siber, OSINT, SOCMINT, HUMINT, Threat Intelligence, dan OPSEC.
+            </div>
+            <div>
+                <a href="#contact" class="btn btn-primary">Hubungi Saya</a>
+                <a href="#achievements" class="btn btn-outline">Hall of Fame</a>
+            </div>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/lindantri?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="social-icon"><i class="fab fa-linkedin-in"></i></a>
+                <a href="https://Instagram.com/ndanxd9" target="_blank" class="social-icon"><i class="fab fa-instagram"></i></a>
+                <a href="https://github.com/LindHunt" target="_blank" class="social-icon"><i class="fab fa-github"></i></a>
+                <a href="mailto:lindhunt@protonmail.com" class="social-icon"><i class="fas fa-envelope"></i></a>
+            </div>
+        </div>
+        <div class="hero-image">
+            <img src="https://i.ibb.co.com/WvLmd6J7/IMG-20260329-114338-202.jpg" alt="LINDAN TRI SAPUTRA" onerror="this.src='https://via.placeholder.com/260x260/1a1a1a/b91c1c?text=LINDAN'">
+        </div>
+    </div>
+
+    <div class="section" id="about">
+        <h2>Tentang</h2>
+        <div class="card" style="background: #0e0e0e;">
+            <p style="font-size: 1.05rem; line-height: 1.6;">I focus on cyber security, with an emphasis on OSINT, SOCMINT, HUMINT, Threat Intelligence, and OPSEC. My interest lies in analyzing and correlating information from multiple sources to better understand cyber threats and emerging risks. On a practical level, I work with open source data related to phishing activity, suspicious or lookalike domains, and digital footprints that may be misused. I maintain strong awareness of OPSEC and responsible information handling. While I have some interest in penetration testing, it is not my main focus and is pursued primarily for learning and personal development. My current goal is to continue strengthening analytical skills, developing an all source intelligence mindset, and maintaining an ethical and legal approach in all cyber security related activities.</p>
+        </div>
+    </div>
+
+    <div class="section" id="skills">
+        <h2>Skill</h2>
+        <div class="skill-list">
+            <span class="skill-tag">Web pentester</span>
+            <span class="skill-tag">Osint Analyst</span>
+            <span class="skill-tag">Humint basic</span>
+            <span class="skill-tag">Cyber threat intelligence</span>
+            <span class="skill-tag">Cyber security awareness</span>
+            <span class="skill-tag">SOCMINT</span>
+            <span class="skill-tag">Social engineer</span>
+        </div>
+    </div>
+
+    <div class="section" id="tools">
+        <h2>Tools I often use</h2>
+        <div class="card-grid">
+            <div class="card">
+                <i class="fas fa-search" style="font-size: 2rem; color: #b91c1c; margin-bottom: 12px; display: inline-block;"></i>
+                <h3>OSINT Tools</h3>
+                <div class="tools-badge">
+                    <span class="tool-item">Maltego</span>
+                    <span class="tool-item">SpiderFoot</span>
+                    <span class="tool-item">Google Dorking</span>
+                    <span class="tool-item">Sherlock</span>
+                    <span class="tool-item">Amass (passive)</span>
+                    <span class="tool-item">Wayback Machine</span>
+                    <span class="tool-item">WHOIS / RDAP</span>
+                    <span class="tool-item">Recon-ng</span>
+                </div>
+            </div>
+            <div class="card">
+                <i class="fas fa-shield-alt" style="font-size: 2rem; color: #b91c1c; margin-bottom: 12px;"></i>
+                <h3>Threat Intelligence</h3>
+                <p>Analisis phishing, domain impersonation, digital footprint, dan threat correlation menggunakan all-source intelligence.</p>
+            </div>
+            <div class="card">
+                <i class="fas fa-chart-line" style="font-size: 2rem; color: #b91c1c; margin-bottom: 12px;"></i>
+                <h3>Intel Framework</h3>
+                <p>Korelasi data dari SOCMINT, HUMINT, OSINT untuk mendeteksi risiko siber secara proaktif.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section" id="achievements">
+        <h2>Sertifikat / Pengakuan</h2>
+        <div class="card">
+            <ul class="hof-list">
+                <li><a href="https://www.unesco.org/en/vulnerability-disclosure" target="_blank"><i class="fas fa-award" style="color:#b91c1c; width: 22px; margin-right: 8px;"></i> HALL OF FAME UNESCO</a></li>
+                <li><a href="https://www.who.int/about/cybersecurity/vulnerability-hall-of-fame/ethical-hacker-list" target="_blank"><i class="fas fa-globe" style="color:#b91c1c; margin-right: 8px;"></i> Hall of Fame WHO</a></li>
+                <li><a href="https://security.utexas.edu/hall-of-fame" target="_blank"><i class="fas fa-university" style="margin-right: 8px;"></i> UTEXAS Hall of Fame</a></li>
+                <li><a href="https://commons.lbl.gov/x/H4jICw" target="_blank"><i class="fas fa-flask" style="margin-right: 8px;"></i> Berkeley Laboratory Hall of Fame</a></li>
+                <li><a href="https://bugcrowd.com/engagements/dhs-vdp/hall_of_fames" target="_blank"><i class="fas fa-bug" style="margin-right: 8px;"></i> DHS HALL OF FAME AT BUGCRWORD</a></li>
+            </ul>
+            <p class="small-note">Dan lainnya bisa kalian cek di LinkedIn saya atau Instagram saya.</p>
+        </div>
+    </div>
+
+    <div class="section" id="contact">
+        <h2>Kontak</h2>
+        <div class="card" style="background: #0f0f0f;">
+            <div style="display: flex; flex-wrap: wrap; gap: 1.2rem; align-items: center; justify-content: space-between;">
+                <div>
+                    <h3 style="margin-bottom: 0.2rem;">LINDAN TRI SAPUTRA</h3>
+                    <p style="color: #bbb;">Pentester & OSINT Analyst</p>
+                    <div class="social-links" style="margin-top: 0.8rem;">
+                        <a href="https://www.linkedin.com/in/lindantri?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" class="social-icon"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        <a href="https://Instagram.com/ndanxd9" target="_blank" class="social-icon"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="https://github.com/LindHunt" target="_blank" class="social-icon"><i class="fab fa-github fa-lg"></i></a>
+                        <a href="mailto:lindhunt@protonmail.com" class="social-icon"><i class="fas fa-envelope fa-lg"></i></a>
+                    </div>
+                </div>
+                <div style="background: #111; padding: 0.8rem 1.5rem; border-left: 3px solid #b91c1c;">
+                    <i class="fab fa-linkedin" style="color:#b91c1c; width: 24px;"></i> linkedin.com/in/lindantri<br>
+                    <i class="fab fa-instagram" style="color:#b91c1c;"></i> @ndanxd9<br>
+                    <i class="fab fa-github"></i> github.com/LindHunt<br>
+                    <i class="fas fa-envelope"></i> lindhunt@protonmail.com
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>LINDAN TRI SAPUTRA — Pentester & OSINT Analyst</p>
+    </footer>
+</div>
+
+<script>
+    (function() {
+        var img = document.querySelector('.hero-image img');
+        if(img) {
+            img.onerror = function() {
+                this.onerror = null;
+                this.src = 'https://via.placeholder.com/260x260/1a1a1a/b91c1c?text=LINDAN';
+            };
+            var currentSrc = img.src;
+            if(!currentSrc.includes('ibb.co') && !currentSrc.includes('image')) {
+                img.src = 'https://i.ibb.co.com/WvLmd6J7/IMG-20260329-114338-202.jpg';
+            }
+        }
+    })();
+</script>
+</body>
+</html>
