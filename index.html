@@ -259,6 +259,8 @@
         align-items:center;
         gap:0.9rem;
         transition:0.2s;
+        text-decoration:none;
+        cursor:pointer;
     }
     .recog-item:hover{ border-color:var(--deep-red); background:var(--card-alt); }
     .recog-item i{
@@ -270,7 +272,14 @@
         border-radius:8px;
         flex-shrink:0;
     }
-    .recog-item span{ font-size:0.92rem; color:#e2e2e2; font-weight:500; }
+    .recog-item span{ font-size:0.92rem; color:#e2e2e2; font-weight:500; flex:1; }
+    .recog-item .go{
+        font-size:0.78rem;
+        color:var(--text-dim);
+        flex-shrink:0;
+        transition:0.2s;
+    }
+    .recog-item:hover .go{ color:var(--primary-red); transform:translate(2px,-2px); }
 
     .cve-strip{
         margin-top:1.3rem;
@@ -430,7 +439,7 @@
 
     <div class="signal-banner">
         <div class="signal-banner-media">
-            <img src="https://private-user-images.githubusercontent.com/168954568/352050706-9c826dd0-fd72-49ba-af60-e79f64344f59.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODY3NjgzNTksIm5iZiI6MTc4Njc2ODA1OSwicGF0aCI6Ii8xNjg5NTQ1NjgvMzUyMDUwNzA2LTljODI2ZGQwLWZkNzItNDliYS1hZjYwLWU3OWY2NDM0NGY1OS5naWY_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwODE1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDgxNVQwNDI3MzlaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01ODlkZDM4YTI1NTdhNmZhMzk4MmFhNzNhZjgyMDQ4ZjZjYjNjNDJlZWI1MGVkMzE0YzM5MzRmN2FlZjRjMWNjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZnaWYifQ.JPmj6pEqIbDT4kvf63QFhbmBRCdTZQdz_3vgPQpkJ18" alt="Terminal / security signal" onerror="this.parentElement.style.display='none';">
+            <img src="https://private-user-images.githubusercontent.com/168954568/352050706-9c826dd0-fd72-49ba-af60-e79f64344f59.gif?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODY3NzAwMjQsIm5iZiI6MTc4Njc2OTcyNCwicGF0aCI6Ii8xNjg5NTQ1NjgvMzUyMDUwNzA2LTljODI2ZGQwLWZkNzItNDliYS1hZjYwLWU3OWY2NDM0NGY1OS5naWY_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwODE1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDgxNVQwNDU1MjRaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT0xMzAxZWUxZWViYWIxOWNmZmUxNGRkOTRjOGVjNDkyOTZlNDMzZGMwZWIxOWY3MjRmNTRkNTc1YzIwMzc5NzNkJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZnaWYifQ.Bp5ylPwkXzSs4_4aDncjgZQ8eMiM_ob9EYm7xyXB1GI" alt="Terminal / security signal" onerror="this.parentElement.style.display='none';">
         </div>
         <div class="signal-banner-text">
             <div class="mono">// live recon</div>
@@ -444,31 +453,32 @@
         <div class="panel">
             <p>Saya aktif di bidang Cyber Security dan terus mengembangkan pengetahuan serta kemampuan di Web Application Security, Offensive Security, Threat Intelligence, OSINT, dan SOCMINT.</p>
             <p>Aktivitas saya meliputi analisis attack surface, identifikasi dan validasi kerentanan, vulnerability research, penetration testing, serta investigasi OSINT/SOCMINT.</p>
-            <p>Sebagian temuan dan riset keamanan saya telah mendapatkan pengakuan dari berbagai organisasi dan institusi internasional, dan saya juga tercatat sebagai penemu <span class="mono" style="color:#fff;">CVE-2026-18741</span>.</p>
+            <p>Sebagian temuan dan riset keamanan saya telah mendapatkan pengakuan dari berbagai organisasi dan institusi internasional, dan saya juga tercatat sebagai penemu <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" class="mono" style="color:#fff; text-decoration:none; border-bottom:1px dashed var(--primary-red);">CVE-2026-18741</a>.</p>
         </div>
     </div>
 
     <div class="section" id="recognition">
         <h2><span class="idx">02</span>Pengakuan &amp; Hall of Fame</h2>
         <div class="recog-grid">
-            <div class="recog-item"><i class="fas fa-globe"></i><span>UNESCO — Hall of Fame</span></div>
-            <div class="recog-item"><i class="fas fa-heartbeat"></i><span>World Health Organization (WHO) — Hall of Fame</span></div>
-            <div class="recog-item"><i class="fas fa-shield-alt"></i><span>U.S. Department of Defense (DoD) — HackerOne, 2× Hall of Fame</span></div>
-            <div class="recog-item"><i class="fas fa-bug"></i><span>U.S. Department of Homeland Security (DHS) — Bugcrowd</span></div>
-            <div class="recog-item"><i class="fas fa-flask"></i><span>Berkeley Laboratory — Hall of Fame</span></div>
-            <div class="recog-item"><i class="fas fa-rocket"></i><span>NASA VDP — 5× Letter of Recognition</span></div>
-            <div class="recog-item"><i class="fas fa-broadcast-tower"></i><span>Deutsche Telekom — Hall of Fame</span></div>
-            <div class="recog-item"><i class="fas fa-university"></i><span>University of Texas at Austin</span></div>
-            <div class="recog-item"><i class="fas fa-university"></i><span>University of San Diego — Letter of Recognition</span></div>
-            <div class="recog-item"><i class="fas fa-shield-alt"></i><span>TNI AD — Sertifikat pelaporan kerentanan keamanan</span></div>
+            <a href="https://www.unesco.org/en/vulnerability-disclosure" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-globe"></i><span>UNESCO — Hall of Fame</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <a href="https://www.who.int/about/cybersecurity/vulnerability-hall-of-fame/ethical-hacker-list" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-heartbeat"></i><span>World Health Organization (WHO) — Hall of Fame</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <a href="https://hackerone.com/lindan_id" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-shield-alt"></i><span>U.S. Department of Defense (DoD) — HackerOne, 2× Hall of Fame</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <a href="https://bugcrowd.com/engagements/dhs-vdp/crowdstream" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-bug"></i><span>U.S. Department of Homeland Security (DHS) — Bugcrowd</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <a href="https://go.lbl.gov/vdp" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-flask"></i><span>Berkeley Laboratory — Hall of Fame</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <div class="recog-item" style="cursor:default;"><i class="fas fa-rocket"></i><span>NASA VDP — 5× Letter of Recognition</span></div>
+            <div class="recog-item" style="cursor:default;"><i class="fas fa-broadcast-tower"></i><span>Deutsche Telekom — Hall of Fame</span></div>
+            <a href="https://security.utexas.edu/hall-of-fame" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-university"></i><span>University of Texas at Austin</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
+            <div class="recog-item" style="cursor:default;"><i class="fas fa-university"></i><span>University of San Diego — Letter of Recognition</span></div>
+            <div class="recog-item" style="cursor:default;"><i class="fas fa-shield-alt"></i><span>TNI AD — Sertifikat pelaporan kerentanan keamanan</span></div>
+            <a href="https://ttis.kukarkab.go.id/whitehat-etam?page=2" target="_blank" rel="noopener" class="recog-item"><i class="fas fa-landmark"></i><span>Pemerintah Kabupaten Kutai Kartanegara — Whitehat Hall of Fame</span><i class="fas fa-arrow-up-right-from-square go"></i></a>
         </div>
-        <div class="cve-strip">
+        <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" class="cve-strip" style="text-decoration:none; cursor:pointer;">
             <i class="fas fa-award" style="color:var(--primary-red); font-size:1.3rem;"></i>
             <div>
-                <div class="mono">Credited: CVE-2026-18741</div>
+                <div class="mono">Credited: CVE-2026-18741 <i class="fas fa-arrow-up-right-from-square" style="font-size:0.68rem; color:var(--text-dim); margin-left:4px;"></i></div>
                 <div class="sub">Dan pengakuan lainnya dari berbagai organisasi &amp; institusi internasional — selengkapnya di LinkedIn / Instagram.</div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="section" id="skills">
@@ -522,7 +532,7 @@
             </div>
         </div>
         <p class="small-note" style="color:var(--text-dim); font-size:0.85rem; margin-top:1rem;">
-            Sertifikat, Letter of Recognition, dan pengakuan Hall of Fame lainnya dapat dilihat di profil LinkedIn dan Instagram saya.
+            Sertifikat dapat dilihat di <a href="https://www.linkedin.com/in/lindantri?utm_source=share_via&utm_content=profile&utm_medium=member_android" target="_blank" rel="noopener" style="color:var(--primary-red); text-decoration:none; border-bottom:1px dashed var(--primary-red);">profil LinkedIn</a> saya, dan Letter of Recognition beserta pengakuan Hall of Fame lainnya dapat dilihat di LinkedIn dan Instagram saya.
         </p>
     </div>
 
