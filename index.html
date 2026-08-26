@@ -1,1090 +1,755 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>Lindan Tri Saputra — Offensive Security</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
 <style>
-
 :root{
-
   --bg:#030508;
-
   --bg1:#060c13;
-
-  --bg2:#0a1220;
-
   --cyan:#00e5ff;
-
   --red:#ff2d55;
-
   --green:#00ff88;
-
   --amber:#ffb700;
-
-  --panel:rgba(10,18,32,0.72);
-
-  --border:rgba(0,229,255,0.14);
-
-  --border2:rgba(0,229,255,0.32);
-
+  --panel:rgba(8,16,28,0.65);
+  --border:rgba(0,229,255,0.12);
+  --border2:rgba(0,229,255,0.3);
   --text:#edf2f7;
-
   --muted:#7a91a8;
-
-  --dim:#3d5168;
-
+  --dim:#3a5168;
 }
-
 *{margin:0;padding:0;box-sizing:border-box;}
-
 html{scroll-behavior:smooth;}
-
-body{
-
-  background:var(--bg);
-
-  color:var(--text);
-
-  font-family:'Space Grotesk',sans-serif;
-
-  overflow-x:hidden;
-
-  line-height:1.6;
-
-}
-
-.mono{font-family:'JetBrains Mono',monospace;}
-
-.display{font-family:'Orbitron',sans-serif;}
-
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',sans-serif;overflow-x:hidden;line-height:1.65;}
 a{color:inherit;text-decoration:none;}
-
 ::selection{background:var(--cyan);color:#000;}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;}
 
-/* ───── NAV ───── */
-
-.nav{
-
-  position:fixed;top:0;left:0;right:0;z-index:999;
-
-  background:rgba(3,5,8,0.82);
-
-  backdrop-filter:blur(14px);
-
-  border-bottom:1px solid var(--border);
-
-}
-
-.nav-row{
-
-  max-width:1200px;margin:0 auto;padding:0 2rem;
-
-  display:flex;align-items:center;justify-content:space-between;height:60px;
-
-}
-
-.brand{font-family:'Orbitron',sans-serif;font-size:.88rem;font-weight:700;color:#fff;letter-spacing:.04em;}
-
-.brand span{display:block;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--cyan);letter-spacing:.16em;text-transform:uppercase;margin-top:2px;}
-
-.nav-links a{font-size:.8rem;color:var(--muted);font-weight:500;margin-left:2rem;transition:color .2s;}
-
-.nav-links a:hover{color:var(--cyan);}
-
-/* ───── MAP CANVAS ───── */
-
-#map-canvas{
-
-  position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;
-
+/* ── INTRO OVERLAY ── */
+#intro{
+  position:fixed;inset:0;z-index:9999;
+  background:#000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
   pointer-events:none;
-
 }
+#intro-canvas{position:absolute;inset:0;width:100%;height:100%;}
+#intro-text{
+  position:relative;z-index:2;text-align:center;
+  opacity:0;animation:intro-text-in .6s ease .9s forwards;
+}
+@keyframes intro-text-in{from{opacity:0;letter-spacing:.8em}to{opacity:1;letter-spacing:.22em}}
+#intro-text .greet{
+  font-family:'Orbitron',sans-serif;font-size:clamp(1.8rem,6vw,3.8rem);
+  font-weight:800;color:#fff;letter-spacing:.22em;text-transform:uppercase;
+  text-shadow:0 0 60px rgba(0,229,255,.8),0 0 120px rgba(0,229,255,.4);
+}
+#intro-text .sub{
+  font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan);
+  letter-spacing:.3em;text-transform:uppercase;margin-top:.7rem;
+  animation:blink-sub 1s step-end infinite .9s;
+}
+@keyframes blink-sub{0%,100%{opacity:1}50%{opacity:0}}
+#intro.done{animation:intro-out .7s ease forwards;}
+@keyframes intro-out{to{opacity:0;pointer-events:none;}}
 
-/* ───── LAYOUT ───── */
+/* ── MAP CANVAS (full bg) ── */
+#map-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 
+/* ── NAV ── */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:rgba(3,5,8,.84);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.nav-row{
+  max-width:1200px;margin:0 auto;padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;height:60px;
+}
+.brand{font-family:'Orbitron',sans-serif;font-size:.9rem;font-weight:800;color:#fff;letter-spacing:.04em;}
+.brand span{display:block;font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--cyan);letter-spacing:.18em;text-transform:uppercase;margin-top:2px;}
+.nav-links a{font-size:.79rem;color:var(--muted);font-weight:500;margin-left:1.8rem;transition:color .2s;position:relative;}
+.nav-links a:hover{color:#fff;}
+.nav-links a::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform .2s;transform-origin:left;}
+.nav-links a:hover::after{transform:scaleX(1);}
+
+/* ── WRAP ── */
 .wrap{max-width:1200px;margin:0 auto;padding:0 2rem;position:relative;z-index:2;}
 
-.section{padding:5rem 0;}
-
-/* ───── HERO ───── */
-
-.hero{
-
-  padding:130px 0 80px;
-
-  display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;
-
-  position:relative;z-index:2;
-
-}
-
-.eyebrow{
-
-  font-family:'JetBrains Mono',monospace;font-size:.72rem;
-
-  letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);
-
-  margin-bottom:1.1rem;display:flex;align-items:center;gap:.6rem;
-
-}
-
-.eyebrow::before{content:"▶";font-size:.5rem;}
-
-.hero h1{
-
-  font-family:'Orbitron',sans-serif;font-size:clamp(2rem,3.8vw,3.2rem);
-
-  font-weight:800;line-height:1.05;color:#fff;margin-bottom:1rem;
-
-  text-shadow:0 0 60px rgba(0,229,255,.2);letter-spacing:.01em;
-
-}
-
-.hero-titles{
-
-  font-size:.95rem;color:#cde4f0;margin-bottom:1.4rem;
-
-  padding-left:.9rem;border-left:2px solid var(--cyan);
-
-  font-weight:500;letter-spacing:.03em;
-
-}
-
-.hero-desc{color:var(--muted);max-width:500px;margin-bottom:2rem;font-size:.97rem;}
-
-.cta-row{display:flex;flex-wrap:wrap;gap:.85rem;margin-bottom:2rem;}
-
-.btn{
-
-  display:inline-flex;align-items:center;gap:.45rem;
-
-  padding:.75rem 1.55rem;border-radius:4px;font-weight:600;
-
-  font-size:.85rem;border:1px solid transparent;cursor:pointer;
-
-  transition:all .2s ease;letter-spacing:.01em;font-family:'Space Grotesk',sans-serif;
-
-}
-
-.btn-primary{background:var(--cyan);color:#020c13;border-color:var(--cyan);box-shadow:0 0 28px rgba(0,229,255,.35);}
-
-.btn-primary:hover{box-shadow:0 0 44px rgba(0,229,255,.55);transform:translateY(-1px);}
-
+/* ── HERO ── */
+.hero{padding:128px 0 72px;display:grid;grid-template-columns:1.2fr .95fr;gap:3.5rem;align-items:center;}
+.eyebrow{font-family:'JetBrains Mono',monospace;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);margin-bottom:1.1rem;}
+.eyebrow::before{content:"▶  ";}
+.hero h1{font-family:'Orbitron',sans-serif;font-size:clamp(1.9rem,3.5vw,3.1rem);font-weight:800;line-height:1.06;color:#fff;margin-bottom:.95rem;text-shadow:0 0 55px rgba(0,229,255,.18);}
+.hero-titles{font-size:.94rem;color:#cde0ee;margin-bottom:1.4rem;padding-left:.9rem;border-left:2px solid var(--cyan);font-weight:500;letter-spacing:.025em;}
+.hero-desc{color:var(--muted);max-width:500px;margin-bottom:1.9rem;font-size:.97rem;}
+.cta-row{display:flex;flex-wrap:wrap;gap:.8rem;margin-bottom:1.9rem;}
+.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.76rem 1.55rem;border-radius:3px;font-weight:600;font-size:.85rem;border:1px solid transparent;transition:all .2s;font-family:'Space Grotesk',sans-serif;}
+.btn-primary{background:var(--cyan);color:#02111a;border-color:var(--cyan);box-shadow:0 0 26px rgba(0,229,255,.32);}
+.btn-primary:hover{box-shadow:0 0 42px rgba(0,229,255,.52);transform:translateY(-1px);}
 .btn-ghost{background:transparent;color:#fff;border-color:var(--border2);}
-
-.btn-ghost:hover{background:rgba(0,229,255,.07);border-color:var(--cyan);}
-
-.socials{display:flex;gap:.7rem;}
-
-.soc{
-
-  width:38px;height:38px;border:1px solid var(--border);border-radius:5px;
-
-  display:flex;align-items:center;justify-content:center;color:var(--muted);
-
-  transition:all .2s;
-
-}
-
-.soc:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 16px rgba(0,229,255,.2);}
-
+.btn-ghost:hover{background:rgba(0,229,255,.06);border-color:var(--cyan);}
+.socials{display:flex;gap:.65rem;}
+.soc{width:38px;height:38px;border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;}
+.soc:hover{border-color:var(--cyan);color:var(--cyan);box-shadow:0 0 14px rgba(0,229,255,.2);}
 .soc svg{width:15px;height:15px;fill:currentColor;}
 
-/* ───── HOLO PHOTO ───── */
-
-.holo-wrap{position:relative;display:flex;align-items:center;justify-content:center;}
-
-.holo-outer{
-
-  position:relative;width:min(340px,100%);
-
-  filter:drop-shadow(0 0 40px rgba(0,229,255,.25));
-
-}
-
-.holo-ring{
-
-  position:absolute;inset:-18px;border:1px solid rgba(0,229,255,.22);
-
-  border-radius:12px;animation:ring-pulse 3s ease-in-out infinite;
-
-}
-
-.holo-ring2{
-
-  position:absolute;inset:-36px;border:1px solid rgba(0,229,255,.08);
-
-  border-radius:18px;animation:ring-pulse 3s ease-in-out infinite .8s;
-
-}
-
-@keyframes ring-pulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:.8;transform:scale(1.015);}}
-
-.holo-frame{
-
-  position:relative;border-radius:10px;overflow:hidden;
-
-  border:1px solid var(--border2);
-
-}
-
+/* ── HOLO PHOTO ── */
+.holo-wrap{display:flex;align-items:center;justify-content:center;}
+.holo-outer{position:relative;width:min(290px,100%);}
+.holo-ring{position:absolute;inset:-18px;border:1px solid rgba(0,229,255,.2);border-radius:12px;animation:rpulse 3.2s ease-in-out infinite;}
+.holo-ring2{position:absolute;inset:-36px;border:1px solid rgba(0,229,255,.07);border-radius:18px;animation:rpulse 3.2s ease-in-out infinite .9s;}
+@keyframes rpulse{0%,100%{opacity:.25;transform:scale(1)}50%{opacity:.75;transform:scale(1.012)}}
+.holo-frame{position:relative;border-radius:9px;overflow:hidden;border:1px solid var(--border2);box-shadow:0 0 50px -15px rgba(0,229,255,.35);}
 .holo-frame img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;}
+.hc{position:absolute;width:22px;height:22px;}
+.hc::before,.hc::after{content:"";position:absolute;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.hc::before{width:100%;height:2px;top:0;left:0;}
+.hc::after{width:2px;height:100%;top:0;left:0;}
+.hc.tl{top:-1px;left:-1px;}
+.hc.tr{top:-1px;right:-1px;transform:scaleX(-1);}
+.hc.bl{bottom:-1px;left:-1px;transform:scaleY(-1);}
+.hc.br{bottom:-1px;right:-1px;transform:scale(-1);}
+.holo-scan{position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,229,255,.025) 3px,rgba(0,229,255,.025) 4px);}
+.holo-bar{position:absolute;left:0;right:0;height:90px;background:linear-gradient(180deg,transparent,rgba(0,229,255,.055),transparent);animation:scanmove 4.5s linear infinite;top:-90px;}
+@keyframes scanmove{to{top:calc(100% + 90px)}}
+.holo-foot{display:flex;align-items:center;justify-content:space-between;margin-top:.65rem;font-family:'JetBrains Mono',monospace;font-size:.6rem;color:var(--dim);}
+.holo-foot .live{color:var(--cyan);display:flex;align-items:center;gap:.35rem;}
+.holo-foot .live::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--cyan);box-shadow:0 0 7px var(--cyan);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
 
-.holo-corner{position:absolute;width:22px;height:22px;}
-
-.holo-corner::before,.holo-corner::after{content:"";position:absolute;background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
-
-.holo-corner::before{width:100%;height:2px;}
-
-.holo-corner::after{width:2px;height:100%;}
-
-.holo-corner.tl{top:-1px;left:-1px;}
-
-.holo-corner.tr{top:-1px;right:-1px;}
-
-.holo-corner.tr::before,.holo-corner.tr::after{right:0;}
-
-.holo-corner.bl{bottom:-1px;left:-1px;}
-
-.holo-corner.bl::before{top:auto;bottom:0;}
-
-.holo-corner.bl::after{top:auto;bottom:0;}
-
-.holo-corner.br{bottom:-1px;right:-1px;}
-
-.holo-corner.br::before{top:auto;bottom:0;right:0;}
-
-.holo-corner.br::after{top:auto;bottom:0;right:0;}
-
-.holo-scanline{
-
-  position:absolute;inset:0;pointer-events:none;
-
-  background:repeating-linear-gradient(0deg,transparent 0,transparent 3px,rgba(0,229,255,.03) 3px,rgba(0,229,255,.03) 4px);
-
-}
-
-.holo-scan-bar{
-
-  position:absolute;left:0;right:0;height:80px;
-
-  background:linear-gradient(180deg,transparent,rgba(0,229,255,.06),transparent);
-
-  animation:scan-move 4s linear infinite;top:-80px;
-
-}
-
-@keyframes scan-move{to{top:calc(100% + 80px);}}
-
-.holo-bottom{
-
-  display:flex;align-items:center;justify-content:space-between;
-
-  margin-top:.7rem;font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);
-
-}
-
-.holo-bottom .online{color:var(--cyan);display:flex;align-items:center;gap:.35rem;}
-
-.holo-bottom .online::before{
-
-  content:"";width:6px;height:6px;border-radius:50%;background:var(--cyan);
-
-  box-shadow:0 0 8px var(--cyan);animation:blink 2s infinite;
-
-}
-
-@keyframes blink{0%,100%{opacity:1;}50%{opacity:.25;}}
-
-/* ───── THREAT HUD (live stats bar under map) ───── */
-
-.threat-hud{
-
+/* ── HUD BAR ── */
+.hud{
   background:var(--panel);border:1px solid var(--border);border-radius:8px;
-
-  padding:.85rem 1.4rem;display:flex;align-items:center;gap:2rem;flex-wrap:wrap;
-
-  backdrop-filter:blur(10px);margin-bottom:3rem;font-family:'JetBrains Mono',monospace;
-
+  padding:.8rem 1.4rem;display:flex;align-items:center;gap:1.8rem;flex-wrap:wrap;
+  backdrop-filter:blur(12px);margin-bottom:3rem;font-family:'JetBrains Mono',monospace;
 }
+.hud-s{display:flex;flex-direction:column;gap:.12rem;}
+.hud-s .l{font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
+.hud-s .v{font-size:1rem;font-weight:600;}
+.hud-s .v.c{color:var(--cyan);text-shadow:0 0 10px rgba(0,229,255,.45);}
+.hud-s .v.r{color:var(--red);text-shadow:0 0 10px rgba(255,45,85,.35);}
+.hud-s .v.g{color:var(--green);}
+.hud-s .v.a{color:var(--amber);}
+.hud-div{width:1px;height:30px;background:var(--border);}
+.hud-ticker{flex:1;min-width:180px;overflow:hidden;height:18px;}
+.hud-ticker-in{display:flex;gap:1.8rem;animation:ticker 22s linear infinite;font-size:.6rem;color:var(--muted);white-space:nowrap;align-items:center;}
+@keyframes ticker{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-.hud-stat{display:flex;flex-direction:column;gap:.15rem;}
-
-.hud-stat .lbl{font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);}
-
-.hud-stat .val{font-size:1.05rem;font-weight:600;}
-
-.hud-stat .val.cyan{color:var(--cyan);text-shadow:0 0 12px rgba(0,229,255,.5);}
-
-.hud-stat .val.red{color:var(--red);text-shadow:0 0 12px rgba(255,45,85,.4);}
-
-.hud-stat .val.green{color:var(--green);text-shadow:0 0 12px rgba(0,255,136,.4);}
-
-.hud-stat .val.amber{color:var(--amber);}
-
-.hud-div{width:1px;height:32px;background:var(--border);flex-shrink:0;}
-
-.hud-ticker{flex:1;min-width:200px;overflow:hidden;height:18px;position:relative;}
-
-.hud-ticker-inner{
-
-  display:flex;gap:2rem;
-
-  animation:ticker 18s linear infinite;
-
-  font-size:.62rem;color:var(--muted);white-space:nowrap;align-items:center;
-
-}
-
-@keyframes ticker{from{transform:translateX(0);}to{transform:translateX(-50%);}}
-
-/* ───── SECTION STYLES ───── */
-
-h2{
-
-  font-family:'Orbitron',sans-serif;font-size:1.55rem;font-weight:700;
-
-  margin-bottom:1.9rem;display:flex;align-items:center;gap:.9rem;color:#fff;
-
-}
-
-h2 .idx{
-
-  font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--cyan);
-
-  border:1px solid rgba(0,229,255,.35);padding:.15rem .55rem;border-radius:3px;
-
-}
-
-.panel{
-
-  background:var(--panel);border:1px solid var(--border);border-radius:10px;
-
-  padding:1.9rem 2.1rem;backdrop-filter:blur(10px);
-
-}
-
-.panel p{color:#b8cad8;}
-
-.panel p+p{margin-top:1rem;}
-
+/* ── SECTIONS ── */
+.section{padding:4.5rem 0;}
+h2{font-family:'Orbitron',sans-serif;font-size:1.5rem;font-weight:700;margin-bottom:1.8rem;display:flex;align-items:center;gap:.8rem;color:#fff;}
+h2 .idx{font-family:'JetBrains Mono',monospace;font-size:.76rem;color:var(--cyan);border:1px solid rgba(0,229,255,.32);padding:.14rem .52rem;border-radius:3px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.8rem 2rem;backdrop-filter:blur(12px);}
+.panel p{color:#b8cad8;}.panel p+p{margin-top:.95rem;}
 .cve-link{color:#fff;border-bottom:1px dashed var(--cyan);}
 
-/* recognition ledger */
+/* ledger */
+.ledger{border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--panel);backdrop-filter:blur(12px);}
+.l-row{display:grid;grid-template-columns:52px 1fr auto;align-items:center;gap:1rem;padding:.88rem 1.35rem;border-bottom:1px solid rgba(0,229,255,.05);transition:background .14s;}
+.l-row:last-child{border-bottom:none;}
+a.l-row:hover{background:rgba(0,229,255,.04);}
+.l-id{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--cyan);}
+.l-org{font-size:.91rem;font-weight:600;color:var(--text);}
+.l-desc{font-size:.77rem;color:var(--dim);margin-top:.1rem;}
+.b-ok{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--green);border:1px solid rgba(0,255,136,.28);border-radius:3px;padding:.2rem .52rem;white-space:nowrap;}
+.b-fi{font-family:'JetBrains Mono',monospace;font-size:.58rem;color:var(--amber);border:1px solid rgba(255,183,0,.28);border-radius:3px;padding:.2rem .52rem;white-space:nowrap;}
+.cve-bar{display:flex;align-items:center;gap:1rem;margin-top:1rem;background:var(--panel);border:1px dashed rgba(0,229,255,.32);border-radius:10px;padding:.95rem 1.3rem;backdrop-filter:blur(12px);}
+.cve-bar .mono{color:#fff;font-weight:600;font-size:.9rem;}
+.cve-bar .sub{font-size:.78rem;color:var(--dim);}
 
-.ledger{border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-
-.ledger-row{
-
-  display:grid;grid-template-columns:56px 1fr auto;align-items:center;
-
-  gap:1rem;padding:.9rem 1.4rem;border-bottom:1px solid rgba(0,229,255,.06);
-
-  transition:background .15s;
-
-}
-
-.ledger-row:last-child{border-bottom:none;}
-
-a.ledger-row:hover{background:rgba(0,229,255,.04);}
-
-.ledger-idx{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cyan);}
-
-.ledger-org{font-size:.92rem;font-weight:600;color:var(--text);}
-
-.ledger-desc{font-size:.78rem;color:var(--dim);margin-top:.12rem;}
-
-.badge-confirmed{
-
-  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.05em;
-
-  color:var(--green);border:1px solid rgba(0,255,136,.3);border-radius:3px;
-
-  padding:.22rem .55rem;white-space:nowrap;
-
-}
-
-.badge-onfile{
-
-  font-family:'JetBrains Mono',monospace;font-size:.6rem;letter-spacing:.05em;
-
-  color:var(--amber);border:1px solid rgba(255,183,0,.3);border-radius:3px;
-
-  padding:.22rem .55rem;white-space:nowrap;
-
-}
-
-/* skills chips */
-
-.chip-grid{display:flex;flex-wrap:wrap;gap:.65rem;}
-
-.chip{
-
-  background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--cyan);
-
-  border-radius:5px;padding:.5rem 1rem;font-size:.84rem;font-weight:500;
-
-  color:#cde4f0;backdrop-filter:blur(8px);transition:all .15s;
-
-}
-
-.chip:hover{border-color:var(--cyan);color:#fff;box-shadow:0 0 14px rgba(0,229,255,.15);}
-
-.chip.amber{border-left-color:var(--amber);}
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:.6rem;}
+.chip{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--cyan);border-radius:5px;padding:.48rem .95rem;font-size:.83rem;font-weight:500;color:#cde4f0;backdrop-filter:blur(8px);transition:all .15s;}
+.chip:hover{border-color:var(--cyan);color:#fff;box-shadow:0 0 12px rgba(0,229,255,.13);}
+.chip.a{border-left-color:var(--amber);}
 
 /* certs */
-
-.cert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;}
-
-.cert-card{
-
-  background:var(--panel);border:1px solid var(--border);border-radius:10px;
-
-  padding:1.5rem 1.2rem;text-align:center;backdrop-filter:blur(10px);
-
-}
-
-.cert-abbr{
-
-  font-family:'Orbitron',sans-serif;font-size:1.3rem;font-weight:700;
-
-  color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,.45);
-
-}
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;}
+.cert-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.4rem 1.1rem;text-align:center;backdrop-filter:blur(12px);}
+.cert-abbr{font-family:'Orbitron',sans-serif;font-size:1.25rem;font-weight:700;color:var(--cyan);text-shadow:0 0 18px rgba(0,229,255,.4);}
+.cert-sub{font-family:'JetBrains Mono',monospace;font-size:.64rem;color:var(--dim);margin-top:.35rem;}
 
 /* contact */
+.c-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.c-card{display:flex;align-items:center;gap:.95rem;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:1.05rem 1.25rem;transition:all .2s;backdrop-filter:blur(12px);}
+.c-card:hover{border-color:var(--cyan);box-shadow:0 0 20px -8px rgba(0,229,255,.35);}
+.c-icon{width:36px;height:36px;border-radius:6px;background:rgba(0,229,255,.08);color:var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.c-icon svg{width:16px;height:16px;fill:currentColor;}
+.c-lbl{font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace;}
+.c-val{font-size:.91rem;font-weight:600;color:#fff;margin-top:.1rem;}
 
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+footer{border-top:1px solid var(--border);padding:2.2rem 0;text-align:center;color:var(--dim);font-size:.82rem;margin-top:2rem;}
+footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains Mono',monospace;}
 
-.contact-card{
-
-  display:flex;align-items:center;gap:1rem;background:var(--panel);
-
-  border:1px solid var(--border);border-radius:10px;padding:1.1rem 1.3rem;
-
-  transition:all .2s;backdrop-filter:blur(10px);
-
-}
-
-.contact-card:hover{border-color:var(--cyan);box-shadow:0 0 22px -8px rgba(0,229,255,.4);}
-
-.contact-icon{
-
-  width:38px;height:38px;border-radius:6px;background:rgba(0,229,255,.09);
-
-  color:var(--cyan);display:flex;align-items:center;justify-content:center;flex-shrink:0;
-
-}
-
-.contact-icon svg{width:17px;height:17px;fill:currentColor;}
-
-.contact-lbl{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);font-family:'JetBrains Mono',monospace;}
-
-.contact-val{font-size:.93rem;font-weight:600;color:#fff;margin-top:.12rem;}
-
-footer{
-
-  border-top:1px solid var(--border);padding:2.2rem 0;text-align:center;
-
-  color:var(--dim);font-size:.83rem;margin-top:2rem;
-
-}
-
-footer .mono{font-size:.7rem;margin-top:.4rem;opacity:.7;}
-
-.reveal{opacity:0;transform:translateY(18px);transition:opacity .55s ease,transform .55s ease;}
-
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
 .reveal.in{opacity:1;transform:none;}
 
 @media(max-width:900px){
-
-  .hero{grid-template-columns:1fr;padding-top:100px;}
-
-  .contact-grid{grid-template-columns:1fr;}
-
+  .hero{grid-template-columns:1fr;padding-top:90px;}
+  .c-grid{grid-template-columns:1fr;}
   .nav-links{display:none;}
-
-  .ledger-row{grid-template-columns:40px 1fr;}
-
 }
-
-@media(max-width:560px){
-
-  .wrap{padding:0 1.2rem;}
-
-  .hero h1{font-size:1.85rem;}
-
-}
-
-/* BOOT / WELCOME */
-.boot-screen{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;overflow:hidden;background:#020407;transition:opacity .9s ease,visibility .9s ease}
-.boot-screen.done{opacity:0;visibility:hidden;pointer-events:none}
-.boot-grid{position:absolute;inset:-20%;background:linear-gradient(rgba(0,229,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.045) 1px,transparent 1px);background-size:42px 42px;transform:perspective(600px) rotateX(58deg) translateY(22%);mask-image:linear-gradient(to bottom,transparent,#000 38%,#000 75%,transparent);animation:grid-drift 8s linear infinite}
-@keyframes grid-drift{to{transform:perspective(600px) rotateX(58deg) translateY(25%) translateX(-42px)}}
-.smoke{position:absolute;width:55vw;height:38vw;max-width:760px;max-height:520px;border-radius:50%;filter:blur(55px);opacity:.2;mix-blend-mode:screen;background:radial-gradient(ellipse at center,rgba(0,229,255,.34),transparent 68%);animation:smoke-float 7s ease-in-out infinite}
-.smoke-a{left:-16vw;top:12vh;transform:rotate(-18deg)} .smoke-b{right:-15vw;bottom:8vh;background:radial-gradient(ellipse at center,rgba(255,45,85,.25),transparent 68%);animation-delay:-2.2s}.smoke-c{left:24vw;top:28vh;opacity:.12;animation-delay:-4.1s}
-@keyframes smoke-float{0%,100%{transform:translate3d(-2%,0,0) scale(1)}50%{transform:translate3d(5%,-4%,0) scale(1.08)}}
-.boot-content{position:relative;text-align:center;z-index:2}.boot-kicker{font-size:.62rem;letter-spacing:.3em;color:var(--cyan);margin-bottom:1rem;opacity:.85}
-.boot-title{font-size:clamp(3.4rem,9vw,7rem);line-height:.9;letter-spacing:.08em;color:#fff;text-shadow:0 0 24px rgba(0,229,255,.42),0 0 90px rgba(0,229,255,.12);animation:welcome-in 1.1s cubic-bezier(.2,.8,.2,1) both}
-.boot-name{margin-top:1.1rem;font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.25em;color:#91a8bb}
-.boot-line{width:min(300px,65vw);height:1px;background:rgba(255,255,255,.12);margin:1.5rem auto .8rem;overflow:hidden}.boot-line span{display:block;height:100%;width:0;background:var(--cyan);box-shadow:0 0 14px var(--cyan);animation:boot-progress 1.75s ease forwards}
-.boot-status{font-size:.58rem;letter-spacing:.16em;color:var(--dim)}.dots{display:inline-block;width:18px;text-align:left;animation:dots 1s steps(4,end) infinite}
-@keyframes boot-progress{to{width:100%}}@keyframes welcome-in{from{opacity:0;transform:translateY(16px) scale(.98);filter:blur(8px)}to{opacity:1;transform:none;filter:none}}
-@keyframes dots{0%{clip-path:inset(0 75% 0 0)}33%{clip-path:inset(0 50% 0 0)}66%{clip-path:inset(0 25% 0 0)}100%{clip-path:inset(0 0 0 0)}}
-.map-vignette{position:fixed;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.42) 100%)}
-#map-canvas{opacity:.72}
-@media(max-width:900px){#map-canvas{opacity:.52}.boot-title{font-size:clamp(3rem,14vw,5rem)}}
-
-/* MAP POLISH */
-.map-atmosphere{position:fixed;inset:0;z-index:1;pointer-events:none;overflow:hidden;background:radial-gradient(circle at 50% 45%,rgba(0,229,255,.045),transparent 38%),linear-gradient(180deg,rgba(3,5,8,.08),rgba(3,5,8,.28));}
-.map-atmosphere::before,.map-atmosphere::after{content:"";position:absolute;width:42vw;height:42vw;border-radius:50%;filter:blur(70px);opacity:.12;animation:map-smoke 11s ease-in-out infinite alternate;}
-.map-atmosphere::before{left:-12vw;top:22vh;background:radial-gradient(circle,rgba(0,229,255,.5),transparent 68%);}
-.map-atmosphere::after{right:-12vw;bottom:8vh;background:radial-gradient(circle,rgba(255,45,85,.35),transparent 68%);animation-delay:-4s;}
-@keyframes map-smoke{from{transform:translate3d(0,0,0) scale(.9)}to{transform:translate3d(6vw,-3vh,0) scale(1.12)}}
+@media(max-width:560px){.wrap{padding:0 1.1rem;}.hero h1{font-size:1.75rem;}}
 </style>
-
 </head>
-
 <body>
-<div class="boot-screen" id="boot-screen" aria-hidden="true">
-  <div class="smoke smoke-a"></div><div class="smoke smoke-b"></div><div class="smoke smoke-c"></div>
-  <div class="boot-grid"></div>
-  <div class="boot-content">
-    <div class="boot-kicker mono">LTS / SECURE SESSION</div>
-    <div class="boot-title display">WELCOME</div>
-    <div class="boot-name">LINDAN TRI SAPUTRA</div>
-    <div class="boot-line"><span></span></div>
-    <div class="boot-status mono">INITIALIZING INTERFACE<span class="dots">...</span></div>
+
+<!-- INTRO SCREEN -->
+<div id="intro">
+  <canvas id="intro-canvas"></canvas>
+  <div id="intro-text">
+    <div class="greet">WELCOME</div>
+    <div class="sub">INITIALIZING SECURE CONNECTION ▮</div>
   </div>
 </div>
 
-<!-- ═══════════════ GLOBAL MAP CANVAS ═══════════════ -->
-
+<!-- WORLD MAP BG -->
 <canvas id="map-canvas"></canvas>
-<div class="map-atmosphere"></div>
-<div class="map-vignette"></div>
 
 <nav class="nav">
-
-<div class="nav-row">
-
-<div class="brand">
-
+  <div class="nav-row">
+    <div class="brand">
       LINDAN TRI SAPUTRA
-
-<span>offensive security · research · osint</span>
-
-</div>
-
-<div class="nav-links">
-
-<a href="#about">About</a>
-
-<a href="#recognition">Recognition</a>
-
-<a href="#skills">Skills</a>
-
-<a href="#tools">Tools</a>
-
-<a href="#certifications">Certifications</a>
-
-<a href="#contact">Contact</a>
-
-</div>
-
-</div>
-
+      <span>offensive security · threat intelligence</span>
+    </div>
+    <div class="nav-links">
+      <a href="#about">About</a>
+      <a href="#recognition">Recognition</a>
+      <a href="#skills">Skills</a>
+      <a href="#tools">Tools</a>
+      <a href="#certifications">Certifications</a>
+      <a href="#contact">Contact</a>
+    </div>
+  </div>
 </nav>
 
 <div class="wrap">
 
-<section class="hero">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Lindan Tri Saputra</div>
+      <h1>LINDAN<br>TRI SAPUTRA</h1>
+      <div class="hero-titles">CYBER SECURITY | OFFENSIVE SECURITY</div>
+      <p class="hero-desc">Active in the field of Cyber Security and continuously expanding my knowledge and skills in Web Application Security, Offensive Security, Threat Intelligence, OSINT, and SOCMINT.</p>
+      <div class="cta-row">
+        <a href="#contact" class="btn btn-primary">Contact Me</a>
+        <a href="#recognition" class="btn btn-ghost">View Recognition</a>
+      </div>
+      <div class="socials">
+        <a href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener" class="soc" aria-label="LinkedIn"><svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05C19.7 8 21 10.2 21 14.2V23h-4v-7.9c0-1.9-.03-4.3-2.6-4.3-2.6 0-3 2-3 4.1V23H7.5V8z"/></svg></a>
+        <a href="https://Instagram.com/ndanxd9" target="_blank" rel="noopener" class="soc" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.63.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.63-.07-4.81s.01-3.56.07-4.81C2.38 3.96 3.9 2.42 7.15 2.27 8.4 2.21 8.78 2.2 12 2.2zm0 1.98c-3.15 0-3.5.01-4.73.07-2.24.1-3.3 1.17-3.4 3.4-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.1 2.23 1.16 3.3 3.4 3.4 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c2.24-.1 3.3-1.17 3.4-3.4.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.1-2.23-1.16-3.3-3.4-3.4-1.23-.06-1.58-.07-4.73-.07zm0 3.37a4.65 4.65 0 110 9.3 4.65 4.65 0 010-9.3zm0 7.67a3.02 3.02 0 100-6.04 3.02 3.02 0 000 6.04zm5.92-7.86a1.09 1.09 0 11-2.17 0 1.09 1.09 0 012.17 0z"/></svg></a>
+        <a href="https://github.com/LindHunt" target="_blank" rel="noopener" class="soc" aria-label="GitHub"><svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.42 7.9 10.95.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.21.7-3.89-1.55-3.89-1.55-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.12 3.06.74.8 1.18 1.83 1.18 3.09 0 4.43-2.7 5.4-5.28 5.69.42.36.78 1.07.78 2.17 0 1.56-.02 2.82-.02 3.2 0 .31.21.67.8.56A10.53 10.53 0 0023.5 12c0-6.35-5.15-11.5-11.5-11.5z"/></svg></a>
+        <a href="mailto:lindhunt@protonmail.com" class="soc" aria-label="Email"><svg viewBox="0 0 24 24"><path d="M2 4h20v16H2V4zm2 2.4V18h16V6.4l-8 5.6-8-5.6zm.8-.4L12 9.5 19.2 6H4.8z"/></svg></a>
+      </div>
+    </div>
+    <div class="holo-wrap">
+      <div class="holo-outer">
+        <div class="holo-ring"></div><div class="holo-ring2"></div>
+        <div class="holo-frame">
+          <span class="hc tl"></span><span class="hc tr"></span><span class="hc bl"></span><span class="hc br"></span>
+          <img src="https://i.ibb.co.com/WvLmd6J7/IMG-20260329-114338-202.jpg" alt="Lindan Tri Saputra" onerror="this.src='https://via.placeholder.com/290x290/060c13/00e5ff?text=LTS';">
+          <div class="holo-scan"><div class="holo-bar"></div></div>
+        </div>
+        <div class="holo-foot">
+          <span>ID / LTS-2026</span>
+          <span class="live">ONLINE</span>
+        </div>
+      </div>
+    </div>
+  </section>
 
-<div>
+  <div class="hud reveal">
+    <div class="hud-s"><span class="l">Attacks/sec</span><span class="v c" id="h-aps">0.0</span></div>
+    <div class="hud-div"></div>
+    <div class="hud-s"><span class="l">Active Threats</span><span class="v r" id="h-thr">0</span></div>
+    <div class="hud-div"></div>
+    <div class="hud-s"><span class="l">Blocked</span><span class="v g" id="h-blk">0</span></div>
+    <div class="hud-div"></div>
+    <div class="hud-s"><span class="l">Top Source</span><span class="v a" id="h-src">–</span></div>
+    <div class="hud-div"></div>
+    <div class="hud-ticker">
+      <div class="hud-ticker-in">
+        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span><span>·</span>
+        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span>
+      </div>
+    </div>
+  </div>
 
-<div class="eyebrow">OFFENSIVE SECURITY · RESEARCH</div>
+  <section class="section reveal" id="about">
+    <h2><span class="idx">01</span>About</h2>
+    <div class="panel">
+      <p>I am active in the field of Cyber Security and continuously expanding my knowledge and skills in Web Application Security, Offensive Security, Threat Intelligence, OSINT, and SOCMINT.</p>
+      <p>My activities include attack surface analysis, vulnerability identification and validation, vulnerability research, penetration testing, and OSINT/SOCMINT investigations.</p>
+      <p>Some of my security findings and research have received recognition from various international organizations and institutions, and I am also credited with the discovery of <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" class="mono cve-link">CVE-2026-18741</a> and <a href="https://www.cve.org/CVERecord?id=CVE-2026-26211" target="_blank" rel="noopener" class="mono cve-link">CVE-2026-26211</a>.</p>
+    </div>
+  </section>
 
-<h1>LINDAN<br>TRI SAPUTRA</h1>
+  <section class="section reveal" id="recognition">
+    <h2><span class="idx">02</span>Recognition &amp; Hall of Fame</h2>
+    <div class="ledger">
+      <a class="l-row" href="https://www.unesco.org/en/vulnerability-disclosure" target="_blank" rel="noopener"><span class="l-id">LOG-01</span><span><div class="l-org">UNESCO</div><div class="l-desc">Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <a class="l-row" href="https://www.who.int/about/cybersecurity/vulnerability-hall-of-fame/ethical-hacker-list" target="_blank" rel="noopener"><span class="l-id">LOG-02</span><span><div class="l-org">World Health Organization (WHO)</div><div class="l-desc">Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <a class="l-row" href="https://hackerone.com/lindan_id" target="_blank" rel="noopener"><span class="l-id">LOG-03</span><span><div class="l-org">U.S. Department of Defense (DoD)</div><div class="l-desc">HackerOne — 2× Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <a class="l-row" href="https://bugcrowd.com/engagements/dhs-vdp/crowdstream" target="_blank" rel="noopener"><span class="l-id">LOG-04</span><span><div class="l-org">U.S. Department of Homeland Security (DHS)</div><div class="l-desc">Bugcrowd VDP</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <a class="l-row" href="https://go.lbl.gov/vdp" target="_blank" rel="noopener"><span class="l-id">LOG-05</span><span><div class="l-org">Lawrence Berkeley National Laboratory</div><div class="l-desc">Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <div class="l-row"><span class="l-id">LOG-06</span><span><div class="l-org">NASA</div><div class="l-desc">Vulnerability Disclosure Program — 5× Letter of Recognition</div></span><span class="b-fi">On File</span></div>
+      <div class="l-row"><span class="l-id">LOG-07</span><span><div class="l-org">Deutsche Telekom</div><div class="l-desc">Hall of Fame</div></span><span class="b-fi">On File</span></div>
+      <a class="l-row" href="https://security.utexas.edu/hall-of-fame" target="_blank" rel="noopener"><span class="l-id">LOG-08</span><span><div class="l-org">University of Texas at Austin</div><div class="l-desc">Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+      <div class="l-row"><span class="l-id">LOG-09</span><span><div class="l-org">University of San Diego</div><div class="l-desc">Letter of Recognition</div></span><span class="b-fi">On File</span></div>
+      <div class="l-row"><span class="l-id">LOG-10</span><span><div class="l-org">Indonesian Army (TNI AD)</div><div class="l-desc">Certificate for reporting a security vulnerability</div></span><span class="b-fi">On File</span></div>
+      <a class="l-row" href="https://ttis.kukarkab.go.id/whitehat-etam?page=2" target="_blank" rel="noopener"><span class="l-id">LOG-11</span><span><div class="l-org">Kutai Kartanegara Regency Government</div><div class="l-desc">Whitehat Hall of Fame</div></span><span class="b-ok">✓ Confirmed</span></a>
+    </div>
+    <div class="cve-bar" style="flex-direction:column;align-items:flex-start;gap:.7rem;">
+      <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:.9rem;text-decoration:none;width:100%;">
+        <span style="font-size:1.1rem;color:var(--cyan);">◆</span>
+        <span><div class="mono">Credited: CVE-2026-18741 ↗</div></span>
+      </a>
+      <a href="https://www.cve.org/CVERecord?id=CVE-2026-26211" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:.9rem;text-decoration:none;width:100%;border-top:1px solid rgba(0,229,255,.1);padding-top:.7rem;">
+        <span style="font-size:1.1rem;color:var(--cyan);">◆</span>
+        <span><div class="mono">Credited: CVE-2026-26211 ↗</div></span>
+      </a>
+      <div class="sub" style="padding-top:.2rem;">And other recognitions from various international organizations &amp; institutions — see LinkedIn / Instagram for more.</div>
+    </div>
+  </section>
 
-<div class="hero-titles">CYBER SECURITY | OFFENSIVE SECURITY</div>
+  <section class="section reveal" id="skills">
+    <h2><span class="idx">03</span>Skills</h2>
+    <div class="chips">
+      <span class="chip">Web Penetration Testing</span><span class="chip">Network Penetration Testing</span><span class="chip">OSINT Analysis</span><span class="chip">SOCMINT Investigation</span><span class="chip">Basic Browser Penetration Testing</span><span class="chip">Attack Surface Analysis</span><span class="chip">Vulnerability Research</span><span class="chip">Bug Bounty</span><span class="chip">Threat Intelligence</span><span class="chip">Risk Mitigation</span><span class="chip">Cyber Security Awareness</span><span class="chip">CVSS v4.0 Assessment</span><span class="chip">AI Prompt Engineering</span>
+    </div>
+  </section>
 
-<p class="hero-desc">Active in the field of Cyber Security and continuously expanding my knowledge and skills in Web Application Security, Offensive Security, Threat Intelligence, OSINT, and SOCMINT.</p>
+  <section class="section reveal" id="tools">
+    <h2><span class="idx">04</span>Tools &amp; Technologies</h2>
+    <div class="panel"><div class="chips">
+      <span class="chip a">Burp Suite</span><span class="chip a">Firefox Browser</span><span class="chip a">Chromium</span><span class="chip a">WSL Linux</span><span class="chip a">Maltego</span><span class="chip a">Google Dorking</span><span class="chip a">Reconnaissance Tools</span>
+    </div></div>
+  </section>
 
-<div class="cta-row">
+  <section class="section reveal" id="certifications">
+    <h2><span class="idx">05</span>Certifications</h2>
+    <div class="cert-grid">
+      <div class="cert-card"><div class="cert-abbr">CCEP</div><div class="cert-sub">Certified</div></div>
+      <div class="cert-card"><div class="cert-abbr">CPPS</div><div class="cert-sub">Certified</div></div>
+      <div class="cert-card"><div class="cert-abbr">CCSC</div><div class="cert-sub">Certified</div></div>
+    </div>
+    <p style="color:var(--dim);font-size:.83rem;margin-top:.95rem;">Certificates viewable on <a href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener" style="color:var(--cyan);border-bottom:1px dashed rgba(0,229,255,.4);">LinkedIn</a>. Letters of Recognition &amp; Hall of Fame on LinkedIn and Instagram.</p>
+  </section>
 
-<a href="#contact" class="btn btn-primary">Contact Me</a>
+  <section class="section reveal" id="contact">
+    <h2><span class="idx">06</span>Contact</h2>
+    <div class="c-grid">
+      <a class="c-card" href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener"><span class="c-icon"><svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05C19.7 8 21 10.2 21 14.2V23h-4v-7.9c0-1.9-.03-4.3-2.6-4.3-2.6 0-3 2-3 4.1V23H7.5V8z"/></svg></span><span><div class="c-lbl">LinkedIn</div><div class="c-val">@lindantri</div></span></a>
+      <a class="c-card" href="https://Instagram.com/ndanxd9" target="_blank" rel="noopener"><span class="c-icon"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.63.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.63-.07-4.81s.01-3.56.07-4.81C2.38 3.96 3.9 2.42 7.15 2.27 8.4 2.21 8.78 2.2 12 2.2zm0 1.98c-3.15 0-3.5.01-4.73.07-2.24.1-3.3 1.17-3.4 3.4-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.1 2.23 1.16 3.3 3.4 3.4 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c2.24-.1 3.3-1.17 3.4-3.4.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.1-2.23-1.16-3.3-3.4-3.4-1.23-.06-1.58-.07-4.73-.07zm0 3.37a4.65 4.65 0 110 9.3 4.65 4.65 0 010-9.3zm0 7.67a3.02 3.02 0 100-6.04 3.02 3.02 0 000 6.04zm5.92-7.86a1.09 1.09 0 11-2.17 0 1.09 1.09 0 012.17 0z"/></svg></span><span><div class="c-lbl">Instagram</div><div class="c-val">@ndanxd9</div></span></a>
+      <a class="c-card" href="https://github.com/LindHunt" target="_blank" rel="noopener"><span class="c-icon"><svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.42 7.9 10.95.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.21.7-3.89-1.55-3.89-1.55-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.12 3.06.74.8 1.18 1.83 1.18 3.09 0 4.43-2.7 5.4-5.28 5.69.42.36.78 1.07.78 2.17 0 1.56-.02 2.82-.02 3.2 0 .31.21.67.8.56A10.53 10.53 0 0023.5 12c0-6.35-5.15-11.5-11.5-11.5z"/></svg></span><span><div class="c-lbl">GitHub</div><div class="c-val">LindHunt</div></span></a>
+      <a class="c-card" href="mailto:lindhunt@protonmail.com"><span class="c-icon"><svg viewBox="0 0 24 24"><path d="M2 4h20v16H2V4zm2 2.4V18h16V6.4l-8 5.6-8-5.6zm.8-.4L12 9.5 19.2 6H4.8z"/></svg></span><span><div class="c-lbl">Email</div><div class="c-val">lindhunt@protonmail.com</div></span></a>
+    </div>
+  </section>
 
-<a href="#recognition" class="btn btn-ghost">View Recognition</a>
-
-</div>
-
-<div class="socials">
-
-<a href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener" class="soc" aria-label="LinkedIn">
-
-<svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05C19.7 8 21 10.2 21 14.2V23h-4v-7.9c0-1.9-.03-4.3-2.6-4.3-2.6 0-3 2-3 4.1V23H7.5V8z"/></svg>
-
-</a>
-
-<a href="https://Instagram.com/ndanxd9" target="_blank" rel="noopener" class="soc" aria-label="Instagram">
-
-<svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.63.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.63-.07-4.81s.01-3.56.07-4.81C2.38 3.96 3.9 2.42 7.15 2.27 8.4 2.21 8.78 2.2 12 2.2zm0 1.98c-3.15 0-3.5.01-4.73.07-2.24.1-3.3 1.17-3.4 3.4-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.1 2.23 1.16 3.3 3.4 3.4 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c2.24-.1 3.3-1.17 3.4-3.4.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.1-2.23-1.16-3.3-3.4-3.4-1.23-.06-1.58-.07-4.73-.07zm0 3.37a4.65 4.65 0 110 9.3 4.65 4.65 0 010-9.3zm0 7.67a3.02 3.02 0 100-6.04 3.02 3.02 0 000 6.04zm5.92-7.86a1.09 1.09 0 11-2.17 0 1.09 1.09 0 012.17 0z"/></svg>
-
-</a>
-
-<a href="https://github.com/LindHunt" target="_blank" rel="noopener" class="soc" aria-label="GitHub">
-
-<svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.42 7.9 10.95.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.21.7-3.89-1.55-3.89-1.55-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.12 3.06.74.8 1.18 1.83 1.18 3.09 0 4.43-2.7 5.4-5.28 5.69.42.36.78 1.07.78 2.17 0 1.56-.02 2.82-.02 3.2 0 .31.21.67.8.56A10.53 10.53 0 0023.5 12c0-6.35-5.15-11.5-11.5-11.5z"/></svg>
-
-</a>
-
-<a href="mailto:lindhunt@protonmail.com" class="soc" aria-label="Email">
-
-<svg viewBox="0 0 24 24"><path d="M2 4h20v16H2V4zm2 2.4V18h16V6.4l-8 5.6-8-5.6zm.8-.4L12 9.5 19.2 6H4.8z"/></svg>
-
-</a>
-
-</div>
-
-</div>
-
-<div class="holo-wrap">
-
-<div class="holo-outer">
-
-<div class="holo-ring"></div>
-
-<div class="holo-ring2"></div>
-
-<div class="holo-frame">
-
-<span class="holo-corner tl"></span>
-
-<span class="holo-corner tr"></span>
-
-<span class="holo-corner bl"></span>
-
-<span class="holo-corner br"></span>
-
-<img src="https://i.ibb.co.com/WvLmd6J7/IMG-20260329-114338-202.jpg" alt="Lindan Tri Saputra" onerror="this.src='https://via.placeholder.com/320x320/060c13/00e5ff?text=LINDAN';">
-
-<div class="holo-scanline"><div class="holo-scan-bar"></div></div>
-
-</div>
-
-<div class="holo-bottom">
-
-<span class="mono">ID / LTS-2026</span>
-
-<span class="online">ONLINE</span>
-
-</div>
-
-</div>
-
-</div>
-
-</section>
-
-<!-- threat HUD -->
-
-<div class="threat-hud reveal">
-
-<div class="hud-stat">
-
-<span class="lbl">Attacks / sec</span>
-
-<span class="val cyan" id="hud-aps">0</span>
-
-</div>
-
-<div class="hud-div"></div>
-
-<div class="hud-stat">
-
-<span class="lbl">Active Threats</span>
-
-<span class="val red" id="hud-threats">0</span>
-
-</div>
-
-<div class="hud-div"></div>
-
-<div class="hud-stat">
-
-<span class="lbl">Blocked</span>
-
-<span class="val green" id="hud-blocked">0</span>
-
-</div>
-
-<div class="hud-div"></div>
-
-<div class="hud-stat">
-
-<span class="lbl">Top Source</span>
-
-<span class="val amber" id="hud-source">–</span>
+  <footer>
+    <p>LINDAN TRI SAPUTRA — Cyber Security &amp; Offensive Security</p>
+    <div class="mo">web application security · osint · socmint · threat intelligence</div>
+  </footer>
 
 </div>
-
-<div class="hud-div"></div>
-
-<div class="hud-ticker">
-
-<div class="hud-ticker-inner" id="hud-ticker">
-
-<span>CVE-2026-18741 DISCOVERED</span><span>·</span>
-
-<span>DoD Hall of Fame ×2</span><span>·</span>
-
-<span>NASA VDP ×5 Letters</span><span>·</span>
-
-<span>WHO Hall of Fame</span><span>·</span>
-
-<span>UNESCO Hall of Fame</span><span>·</span>
-
-<span>DHS Bugcrowd VDP</span><span>·</span>
-
-<span>Deutsche Telekom HoF</span><span>·</span>
-
-<span>CVE-2026-18741 DISCOVERED</span><span>·</span>
-
-<span>DoD Hall of Fame ×2</span><span>·</span>
-
-<span>NASA VDP ×5 Letters</span><span>·</span>
-
-<span>WHO Hall of Fame</span><span>·</span>
-
-<span>UNESCO Hall of Fame</span><span>·</span>
-
-<span>DHS Bugcrowd VDP</span><span>·</span>
-
-<span>Deutsche Telekom HoF</span>
-
-</div>
-
-</div>
-
-</div>
-
-<section class="section reveal" id="about">
-
-<h2><span class="idx">01</span>About</h2>
-
-<div class="panel">
-
-<p>I am active in the field of Cyber Security and continuously expanding my knowledge and skills in Web Application Security, Offensive Security, Threat Intelligence, OSINT, and SOCMINT.</p>
-
-<p>My activities include attack surface analysis, vulnerability identification and validation, vulnerability research, penetration testing, and OSINT/SOCMINT investigations.</p>
-
-<p>Some of my security findings and research have received recognition from various international organizations and institutions, and I am also credited with the discovery of <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" class="mono cve-link">CVE-2026-18741</a>.</p>
-
-</div>
-
-</section>
-
-<section class="section reveal" id="recognition">
-
-<h2><span class="idx">02</span>Recognition &amp; Hall of Fame</h2>
-
-<div class="ledger">
-
-<a class="ledger-row" href="https://www.unesco.org/en/vulnerability-disclosure" target="_blank" rel="noopener"><span class="ledger-idx">LOG-01</span><span><div class="ledger-org">UNESCO</div><div class="ledger-desc">Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-<a class="ledger-row" href="https://www.who.int/about/cybersecurity/vulnerability-hall-of-fame/ethical-hacker-list" target="_blank" rel="noopener"><span class="ledger-idx">LOG-02</span><span><div class="ledger-org">World Health Organization (WHO)</div><div class="ledger-desc">Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-<a class="ledger-row" href="https://hackerone.com/lindan_id" target="_blank" rel="noopener"><span class="ledger-idx">LOG-03</span><span><div class="ledger-org">U.S. Department of Defense (DoD)</div><div class="ledger-desc">HackerOne — 2× Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-<a class="ledger-row" href="https://bugcrowd.com/engagements/dhs-vdp/crowdstream" target="_blank" rel="noopener"><span class="ledger-idx">LOG-04</span><span><div class="ledger-org">U.S. Department of Homeland Security (DHS)</div><div class="ledger-desc">Bugcrowd VDP</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-<a class="ledger-row" href="https://go.lbl.gov/vdp" target="_blank" rel="noopener"><span class="ledger-idx">LOG-05</span><span><div class="ledger-org">Lawrence Berkeley National Laboratory</div><div class="ledger-desc">Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-<div class="ledger-row"><span class="ledger-idx">LOG-06</span><span><div class="ledger-org">NASA</div><div class="ledger-desc">Vulnerability Disclosure Program — 5× Letter of Recognition</div></span><span class="badge-onfile">On File</span></div>
-
-<div class="ledger-row"><span class="ledger-idx">LOG-07</span><span><div class="ledger-org">Deutsche Telekom</div><div class="ledger-desc">Hall of Fame</div></span><span class="badge-onfile">On File</span></div>
-
-<a class="ledger-row" href="https://security.utexas.edu/hall-of-fame" target="_blank" rel="noopener"><span class="ledger-idx">LOG-08</span><span><div class="ledger-org">University of Texas at Austin</div><div class="ledger-desc">Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></div>
-
-<div class="ledger-row"><span class="ledger-idx">LOG-09</span><span><div class="ledger-org">University of San Diego</div><div class="ledger-desc">Letter of Recognition</div></span><span class="badge-onfile">On File</span></div>
-
-<div class="ledger-row"><span class="ledger-idx">LOG-10</span><span><div class="ledger-org">Indonesian Army (TNI AD)</div><div class="ledger-desc">Certificate for reporting a security vulnerability</div></span><span class="badge-onfile">On File</span></div>
-
-<a class="ledger-row" href="https://ttis.kukarkab.go.id/whitehat-etam?page=2" target="_blank" rel="noopener"><span class="ledger-idx">LOG-11</span><span><div class="ledger-org">Kutai Kartanegara Regency Government</div><div class="ledger-desc">Whitehat Hall of Fame</div></span><span class="badge-confirmed">✓ Confirmed</span></a>
-
-</div>
-
-<a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:1rem;margin-top:1.1rem;background:var(--panel);border:1px dashed rgba(0,229,255,.35);border-radius:10px;padding:1rem 1.3rem;backdrop-filter:blur(10px);transition:all .2s;">
-
-<span style="font-size:1.3rem;color:var(--cyan);">◆</span>
-
-<span>
-
-<span class="mono" style="color:#fff;font-weight:600;font-size:.92rem;">Credited: CVE-2026-18741 ↗</span><br>
-
-<span style="font-size:.8rem;color:var(--dim);">And other recognitions from various international organizations &amp; institutions — see LinkedIn / Instagram for more.</span>
-
-</span>
-
-</a>
-
-</section>
-
-<section class="section reveal" id="skills">
-
-<h2><span class="idx">03</span>Skills</h2>
-
-<div class="chip-grid">
-
-<span class="chip">Web Penetration Testing</span>
-
-<span class="chip">Network Penetration Testing</span>
-
-<span class="chip">OSINT Analysis</span>
-
-<span class="chip">SOCMINT Investigation</span>
-
-<span class="chip">Basic Browser Penetration Testing</span>
-
-<span class="chip">Attack Surface Analysis</span>
-
-<span class="chip">Vulnerability Research</span>
-
-<span class="chip">Bug Bounty</span>
-
-<span class="chip">Threat Intelligence</span>
-
-<span class="chip">Risk Mitigation</span>
-
-<span class="chip">Cyber Security Awareness</span>
-
-<span class="chip">CVSS v4.0 Assessment</span>
-
-<span class="chip">AI Prompt Engineering</span>
-
-</div>
-
-</section>
-
-<section class="section reveal" id="tools">
-
-<h2><span class="idx">04</span>Tools &amp; Technologies</h2>
-
-<div class="panel">
-
-<div class="chip-grid">
-
-<span class="chip amber">Burp Suite</span>
-
-<span class="chip amber">Firefox Browser</span>
-
-<span class="chip amber">Chromium</span>
-
-<span class="chip amber">WSL Linux</span>
-
-<span class="chip amber">Maltego</span>
-
-<span class="chip amber">Google Dorking</span>
-
-<span class="chip amber">Reconnaissance Tools</span>
-
-</div>
-
-</div>
-
-</section>
-
-<section class="section reveal" id="certifications">
-
-<h2><span class="idx">05</span>Certifications</h2>
-
-<div class="cert-grid">
-
-<div class="cert-card"><div class="cert-abbr">CCEP</div><div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--dim);margin-top:.4rem;">Certified</div></div>
-
-<div class="cert-card"><div class="cert-abbr">CPPS</div><div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--dim);margin-top:.4rem;">Certified</div></div>
-
-<div class="cert-card"><div class="cert-abbr">CCSC</div><div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--dim);margin-top:.4rem;">Certified</div></div>
-
-</div>
-
-<p style="color:var(--dim);font-size:.84rem;margin-top:1rem;">Certificates viewable on <a href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener" style="color:var(--cyan);border-bottom:1px dashed rgba(0,229,255,.4);">LinkedIn</a>. Letters of Recognition &amp; Hall of Fame on LinkedIn and Instagram.</p>
-
-</section>
-
-<section class="section reveal" id="contact">
-
-<h2><span class="idx">06</span>Contact</h2>
-
-<div class="contact-grid">
-
-<a class="contact-card" href="https://www.linkedin.com/in/lindantri" target="_blank" rel="noopener">
-
-<span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M4.98 3.5C4.98 4.88 3.87 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1s2.48 1.12 2.48 2.5zM.5 8h4V23h-4V8zm7.5 0h3.8v2.05h.05c.53-1 1.83-2.05 3.77-2.05C19.7 8 21 10.2 21 14.2V23h-4v-7.9c0-1.9-.03-4.3-2.6-4.3-2.6 0-3 2-3 4.1V23H7.5V8z"/></svg></span>
-
-<span><div class="contact-lbl">LinkedIn</div><div class="contact-val">@lindantri</div></span>
-
-</a>
-
-<a class="contact-card" href="https://Instagram.com/ndanxd9" target="_blank" rel="noopener">
-
-<span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.25.07 1.63.07 4.81s-.01 3.56-.07 4.81c-.15 3.23-1.66 4.77-4.92 4.92-1.25.06-1.62.07-4.85.07s-3.6-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92-.06-1.25-.07-1.63-.07-4.81s.01-3.56.07-4.81C2.38 3.96 3.9 2.42 7.15 2.27 8.4 2.21 8.78 2.2 12 2.2zm0 1.98c-3.15 0-3.5.01-4.73.07-2.24.1-3.3 1.17-3.4 3.4-.06 1.23-.07 1.58-.07 4.73s.01 3.5.07 4.73c.1 2.23 1.16 3.3 3.4 3.4 1.23.06 1.58.07 4.73.07s3.5-.01 4.73-.07c2.24-.1 3.3-1.17 3.4-3.4.06-1.23.07-1.58.07-4.73s-.01-3.5-.07-4.73c-.1-2.23-1.16-3.3-3.4-3.4-1.23-.06-1.58-.07-4.73-.07zm0 3.37a4.65 4.65 0 110 9.3 4.65 4.65 0 010-9.3zm0 7.67a3.02 3.02 0 100-6.04 3.02 3.02 0 000 6.04zm5.92-7.86a1.09 1.09 0 11-2.17 0 1.09 1.09 0 012.17 0z"/></svg></span>
-
-<span><div class="contact-lbl">Instagram</div><div class="contact-val">@ndanxd9</div></span>
-
-</a>
-
-<a class="contact-card" href="https://github.com/LindHunt" target="_blank" rel="noopener">
-
-<span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.1 3.3 9.42 7.9 10.95.58.1.79-.56.79-.56 0-.28-.01-1.02-.02-2-3.21.7-3.89-1.55-3.89-1.55-.53-1.33-1.28-1.69-1.28-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.47.11-3.06 0 0 .97-.31 3.18 1.18a11.1 11.1 0 015.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.77.12 3.06.74.8 1.18 1.83 1.18 3.09 0 4.43-2.7 5.4-5.28 5.69.42.36.78 1.07.78 2.17 0 1.56-.02 2.82-.02 3.2 0 .31.21.67.8.56A10.53 10.53 0 0023.5 12c0-6.35-5.15-11.5-11.5-11.5z"/></svg></span>
-
-<span><div class="contact-lbl">GitHub</div><div class="contact-val">LindHunt</div></span>
-
-</a>
-
-<a class="contact-card" href="mailto:lindhunt@protonmail.com">
-
-<span class="contact-icon"><svg viewBox="0 0 24 24"><path d="M2 4h20v16H2V4zm2 2.4V18h16V6.4l-8 5.6-8-5.6zm.8-.4L12 9.5 19.2 6H4.8z"/></svg></span>
-
-<span><div class="contact-lbl">Email</div><div class="contact-val">lindhunt@protonmail.com</div></span>
-
-</a>
-
-</div>
-
-</section>
-
-<footer>
-
-<p>LINDAN TRI SAPUTRA — Cyber Security &amp; Offensive Security</p>
-
-<div class="mono">web application security · osint · socmint · threat intelligence</div>
-
-</footer>
-
-</div><!-- /wrap -->
-
 <script>
+(function(){
+'use strict';
 
-// ═══════════════════════════════════════════════════
+// ─────────────────────────────────────────────
+//  INTRO: smoke particles + WELCOME
+// ─────────────────────────────────────────────
+var iCanvas = document.getElementById('intro-canvas');
+var iCtx = iCanvas.getContext('2d');
+var iW, iH;
+var smoke = [];
+var introStart = Date.now();
+var INTRO_DUR = 3000; // ms before fade
 
-// WORLD MAP — detailed world geometry + animated arcs
-  // Country names are intentionally not rendered.
-  (function(){
-    var canvas=document.getElementById('map-canvas'),ctx=canvas.getContext('2d'),W,H,DPR=1;
-    var worldFeatures=null,missiles=[],explosions=[],particles=[],lastSpawn=0,spawnInterval=430;
-    var CITIES=[
-      ["Jakarta",106.8,-6.2,"#00e5ff"],["Washington",-77,38.9,"#ff2d55"],["London",-0.1,51.5,"#00e5ff"],["Moscow",37.6,55.7,"#ff2d55"],["Beijing",116.4,39.9,"#ff2d55"],["Tokyo",139.7,35.7,"#00e5ff"],["Berlin",13.4,52.5,"#00e5ff"],["Singapore",103.8,1.3,"#00e5ff"],["Lagos",3.4,6.5,"#ffb700"],["Sao Paulo",-46.6,-23.6,"#00e5ff"],["Sydney",151.2,-33.9,"#00e5ff"],["Toronto",-79.3,43.7,"#00e5ff"],["Dubai",55.3,25.2,"#ffb700"],["Mumbai",72.9,19.1,"#ffb700"],["Seoul",127,37.6,"#00e5ff"],["Tehran",51.4,35.7,"#ff2d55"],["Pyongyang",125.7,39,"#ff2d55"],["Shanghai",121.5,31.2,"#ff2d55"],["Cairo",31.2,30.1,"#ffb700"],["Bogota",-74.1,4.6,"#00e5ff"],["Paris",2.35,48.86,"#00e5ff"],["Madrid",-3.7,40.4,"#00e5ff"],["Rome",12.5,41.9,"#00e5ff"],["Istanbul",28.98,41,"#ffb700"],["Bangkok",100.5,13.75,"#00e5ff"],["Manila",120.98,14.6,"#00e5ff"],["Honolulu",-157.85,21.3,"#00e5ff"],["Mexico City",-99.13,19.43,"#00e5ff"],["Johannesburg",28.05,-26.2,"#ffb700"],["Buenos Aires",-58.38,-34.6,"#00e5ff"]
-    ];
-    var ATTACK_PAIRS=[[3,0],[4,5],[15,2],[16,5],[17,5],[18,7],[3,6],[4,7],[8,2],[11,1],[9,6],[10,7],[12,0],[13,2],[15,3],[16,4],[18,2],[5,0],[0,1],[14,4],[24,0],[25,5],[27,1],[28,10],[29,9],[19,1],[21,2],[22,2],[23,4],[26,11],[7,24],[20,15]];
-    function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+"px";canvas.style.height=H+"px";ctx.setTransform(DPR,0,0,DPR,0,0)}
-    resize();addEventListener("resize",resize);
-    function project(lon,lat){var padX=Math.min(28,W*.055),x=padX+(lon+180)/360*(W-padX*2),y=H*.5-(lat/90)*(H*.42);return[x,y]}
-    function rgb(hex){var n=parseInt(hex.slice(1),16);return[(n>>16)&255,(n>>8)&255,n&255]}
-    function rgba(hex,a){var r=rgb(hex);return"rgba("+r[0]+","+r[1]+","+r[2]+","+a+")"}
-    function drawGrid(){
-      ctx.save();ctx.strokeStyle="rgba(0,229,255,.045)";ctx.lineWidth=.55;
-      for(var lon=-180;lon<=180;lon+=15){var a=project(lon,-78),b=project(lon,78);ctx.beginPath();ctx.moveTo(a[0],a[1]);ctx.lineTo(b[0],b[1]);ctx.stroke()}
-      for(var lat=-60;lat<=60;lat+=15){ctx.beginPath();for(var lon=-180;lon<=180;lon+=5){var p=project(lon,lat);lon===-180?ctx.moveTo(p[0],p[1]):ctx.lineTo(p[0],p[1])}ctx.stroke()}ctx.restore()
-    }
-    function drawWorld(){
-      ctx.clearRect(0,0,W,H);drawGrid();if(!worldFeatures)return;
-      worldFeatures.features.forEach(function(f){var g=f.geometry;if(!g)return;var polys=g.type==="Polygon"? [g.coordinates]:g.coordinates;
-        polys.forEach(function(poly){poly.forEach(function(ring){ctx.beginPath();ring.forEach(function(pt,i){var p=project(pt[0],pt[1]);i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1])});ctx.closePath();ctx.fillStyle="rgba(0,229,255,.035)";ctx.fill();ctx.strokeStyle="rgba(0,229,255,.20)";ctx.lineWidth=.65;ctx.stroke()})})
-      });
-      var scanY=(Date.now()/22)%(H+180)-90,g=ctx.createLinearGradient(0,scanY-45,0,scanY+45);g.addColorStop(0,"rgba(0,229,255,0)");g.addColorStop(.5,"rgba(0,229,255,.055)");g.addColorStop(1,"rgba(0,229,255,0)");ctx.fillStyle=g;ctx.fillRect(0,scanY-45,W,90)
-    }
-    function drawCities(){
-      var t=Date.now()/1000;CITIES.forEach(function(c,i){var p=project(c[1],c[2]),pulse=.5+.5*Math.sin(t*2.3+i);ctx.beginPath();ctx.arc(p[0],p[1],5+7*pulse,0,Math.PI*2);ctx.strokeStyle=rgba(c[3],.1+.24*pulse);ctx.lineWidth=.8;ctx.stroke();ctx.beginPath();ctx.arc(p[0],p[1],1.8+1.1*pulse,0,Math.PI*2);ctx.fillStyle=c[3];ctx.shadowColor=c[3];ctx.shadowBlur=10;ctx.fill();ctx.shadowBlur=0})
-    }
-    function spawnMissile(){var pair=ATTACK_PAIRS[Math.floor(Math.random()*ATTACK_PAIRS.length)],s=CITIES[pair[0]],d=CITIES[pair[1]],a=project(s[1],s[2]),b=project(d[1],d[2]);missiles.push({sx:a[0],sy:a[1],dx:b[0],dy:b[1],progress:0,speed:.006+Math.random()*.007,color:s[3],trail:[],arc:.16+Math.random()*.28})}
-    function drawMissiles(){
-      var now=Date.now();if(now-lastSpawn>spawnInterval){for(var n=0;n<2+Math.floor(Math.random()*3);n++)spawnMissile();lastSpawn=now}
-      missiles=missiles.filter(function(m){return m.progress<1});missiles.forEach(function(m){
-        m.progress=Math.min(1,m.progress+m.speed);var t=m.progress,cx=(m.sx+m.dx)/2,dist=Math.hypot(m.dx-m.sx,m.dy-m.sy),cy=Math.min(m.sy,m.dy)-dist*m.arc,px=(1-t)*(1-t)*m.sx+2*(1-t)*t*cx+t*t*m.dx,py=(1-t)*(1-t)*m.sy+2*(1-t)*t*cy+t*t*m.dy;m.trail.push([px,py]);if(m.trail.length>42)m.trail.shift();
-        for(var i=1;i<m.trail.length;i++){var al=i/m.trail.length;ctx.beginPath();ctx.moveTo(m.trail[i-1][0],m.trail[i-1][1]);ctx.lineTo(m.trail[i][0],m.trail[i][1]);ctx.strokeStyle=rgba(m.color,al*.72);ctx.lineWidth=.7+al*2.1;ctx.shadowColor=m.color;ctx.shadowBlur=5*al;ctx.stroke()}ctx.shadowBlur=0;
-        var prev=m.trail[m.trail.length-2]||[px-1,py],ang=Math.atan2(py-prev[1],px-prev[0]);ctx.save();ctx.translate(px,py);ctx.rotate(ang);ctx.beginPath();ctx.moveTo(7,0);ctx.lineTo(-3,-2.5);ctx.lineTo(-1,0);ctx.lineTo(-3,2.5);ctx.closePath();ctx.fillStyle=m.color;ctx.shadowColor=m.color;ctx.shadowBlur=14;ctx.fill();ctx.restore();ctx.shadowBlur=0;
-        if(m.progress>=1){spawnExplosion(m.dx,m.dy,m.color);for(var q=0;q<7;q++)particles.push({x:m.dx,y:m.dy,vx:(Math.random()-.5)*2.8,vy:(Math.random()-.5)*2.8,a:1,c:m.color})}
-      })
-    }
-    function spawnExplosion(x,y,c){explosions.push({x:x,y:y,color:c,r:1,a:1})}
-    function drawExplosions(){explosions=explosions.filter(function(e){return e.a>.02});explosions.forEach(function(e){e.r+=1.15;e.a-=.045;ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.strokeStyle=rgba(e.color,e.a);ctx.lineWidth=1.5;ctx.shadowColor=e.color;ctx.shadowBlur=12;ctx.stroke();ctx.shadowBlur=0;ctx.beginPath();ctx.arc(e.x,e.y,2.5,0,Math.PI*2);ctx.fillStyle=rgba(e.color,e.a*.65);ctx.fill()})}
-    function drawParticles(){particles=particles.filter(function(p){return p.a>.03});particles.forEach(function(p){p.x+=p.vx;p.y+=p.vy;p.vx*=.985;p.vy*=.985;p.a-=.025;ctx.fillStyle=rgba(p.c,p.a);ctx.fillRect(p.x,p.y,1.5,1.5)})}
-    function frame(){drawWorld();drawMissiles();drawExplosions();drawParticles();drawCities();requestAnimationFrame(frame)}frame();
-    Promise.all([
-      fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then(function(r){return r.json()}),
-      new Promise(function(resolve,reject){var sc=document.createElement("script");sc.src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js";sc.onload=resolve;sc.onerror=reject;document.head.appendChild(sc)})
-    ]).then(function(a){var topo=a[0];worldFeatures=topojson.feature(topo,topo.objects.countries)}).catch(function(){worldFeatures=null});
-    setTimeout(function(){var b=document.getElementById("boot-screen");if(b)b.classList.add("done")},2200);
+function iResize(){
+  iW = iCanvas.width  = window.innerWidth;
+  iH = iCanvas.height = window.innerHeight;
+}
+iResize();
+window.addEventListener('resize', iResize);
 
-  // ── Reveal on scroll
-
-  var revs = document.querySelectorAll('.reveal');
-
-  var obs = new IntersectionObserver(function(entries){
-
-    entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target); } });
-
-  }, { threshold:.1 });
-
-  revs.forEach(function(el){ obs.observe(el); });
-
-  // ── Smooth nav scroll
-
-  document.querySelectorAll('.nav-links a[href^="#"]').forEach(function(a){
-
-    a.addEventListener('click',function(e){
-
-      var t = document.querySelector(this.getAttribute('href'));
-
-      if(t){ e.preventDefault(); window.scrollTo({ top: t.getBoundingClientRect().top + pageYOffset - 70, behavior:'smooth' }); }
-
+function spawnSmoke(){
+  for(var i=0;i<3;i++){
+    smoke.push({
+      x: iW*(0.2 + Math.random()*0.6),
+      y: iH*(0.4 + Math.random()*0.4),
+      r: 30 + Math.random()*60,
+      vx: (Math.random()-0.5)*0.4,
+      vy: -(0.3 + Math.random()*0.5),
+      alpha: 0.12 + Math.random()*0.18,
+      grow: 0.5 + Math.random()*1.2,
+      color: Math.random()<0.4 ? '0,229,255' : '255,255,255',
     });
+  }
+}
+for(var s=0;s<60;s++) spawnSmoke();
 
+function introFrame(){
+  var elapsed = Date.now() - introStart;
+  iCtx.clearRect(0,0,iW,iH);
+
+  // Scanlines
+  for(var y=0;y<iH;y+=4){
+    iCtx.fillStyle='rgba(0,0,0,0.18)';
+    iCtx.fillRect(0,y,iW,2);
+  }
+
+  smoke.forEach(function(p){
+    p.x += p.vx; p.y += p.vy; p.r += p.grow; p.alpha -= 0.0015;
+    if(p.alpha<=0 || p.r>320){ p.alpha=0.12+Math.random()*0.16; p.r=20+Math.random()*40; p.x=iW*(0.1+Math.random()*0.8); p.y=iH*(0.5+Math.random()*0.4); p.grow=0.5+Math.random()*1.2; }
+    var g = iCtx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    g.addColorStop(0,'rgba('+p.color+','+p.alpha+')');
+    g.addColorStop(1,'rgba('+p.color+',0)');
+    iCtx.beginPath(); iCtx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    iCtx.fillStyle=g; iCtx.fill();
   });
 
-  // ── HUD counters
+  // Horizontal scan bar sweep
+  var scanY = ((elapsed*0.18)%iH);
+  var sg = iCtx.createLinearGradient(0,scanY-30,0,scanY+30);
+  sg.addColorStop(0,'rgba(0,229,255,0)');
+  sg.addColorStop(0.5,'rgba(0,229,255,0.07)');
+  sg.addColorStop(1,'rgba(0,229,255,0)');
+  iCtx.fillStyle=sg; iCtx.fillRect(0,scanY-30,iW,60);
 
-  var apsEl     = document.getElementById('hud-aps');
+  if(elapsed < INTRO_DUR){
+    requestAnimationFrame(introFrame);
+  } else {
+    var intro = document.getElementById('intro');
+    intro.classList.add('done');
+    setTimeout(function(){ intro.style.display='none'; }, 750);
+  }
+}
+introFrame();
 
-  var threatEl  = document.getElementById('hud-threats');
 
-  var blockedEl = document.getElementById('hud-blocked');
+// ─────────────────────────────────────────────
+//  WORLD MAP — Natural Earth hand-tuned SVG paths
+//  projected via equirectangular on canvas
+// ─────────────────────────────────────────────
+var mCanvas = document.getElementById('map-canvas');
+var mCtx = mCanvas.getContext('2d');
+var MW, MH;
 
-  var sourceEl  = document.getElementById('hud-source');
+function mResize(){ MW = mCanvas.width=window.innerWidth; MH = mCanvas.height=window.innerHeight; }
+mResize(); window.addEventListener('resize', mResize);
 
-  var sources   = ['ORIGIN-01','ORIGIN-07','ORIGIN-13','UNKNOWN','NODE-X'];
+// lon/lat → canvas pixel  (equirectangular, full-world fit)
+function proj(lon, lat){
+  var x = ((lon + 180) / 360) * MW;
+  var y = ((90 - lat) / 180) * MH;
+  return [x, y];
+}
 
-  var blocked   = 12400;
+// Dense simplified country outlines — enough segments to look like real borders
+// Format: [lon,lat] arrays per country. Multiple rings = multiple coastlines/islands
+var LAND = [
+// ── NORTH AMERICA ──
+// USA lower 48 rough outline
+[[-124,49],[-123,46],[-124,43],[-124,40],[-120,37],[-117,33],[-117,32],[-114,32],[-111,31],[-108,31],[-106,32],[-104,30],[-103,29],[-101,30],[-100,28],[-97,26],[-96,26],[-97,28],[-99,27],[-100,29],[-103,29],[-104,30],[-106,32],[-109,31],[-111,31],[-114,32],[-117,32],[-118,34],[-120,35],[-122,37],[-122,38],[-124,40],[-124,43],[-123,46],[-124,49],[-120,49],[-115,49],[-110,49],[-104,49],[-100,49],[-95,49],[-90,48],[-87,48],[-83,46],[-82,42],[-79,43],[-76,44],[-75,45],[-71,45],[-70,43],[-67,47],[-66,44],[-70,42],[-73,41],[-74,40],[-75,39],[-76,38],[-77,38],[-75,35],[-78,34],[-80,32],[-81,31],[-82,30],[-84,30],[-85,30],[-87,30],[-88,30],[-89,29],[-90,29],[-91,29],[-93,29],[-94,30],[-95,29],[-97,26],[-94,18],[-90,16],[-87,16],[-84,16],[-83,18],[-83,10],[-80,8],[-77,8],[-76,8],[-76,10],[-82,10],[-83,14],[-83,16],[-84,17],[-87,16],[-90,16],[-90,18],[-92,18],[-93,19],[-87,16],[-84,16],[-87,30],[-88,30],[-89,29],[-90,29],[-91,29],[-93,29],[-94,30],[-95,29],[-97,26],[-96,26],[-97,28],[-99,27],[-100,28],[-101,30],[-103,29],[-104,30],[-106,32],[-108,31],[-111,31],[-114,32],[-117,32],[-118,34],[-120,35],[-122,37],[-124,40],[-124,43],[-124,49]],
+// Canada
+[[-60,47],[-63,46],[-65,44],[-66,44],[-67,45],[-67,47],[-70,47],[-71,45],[-75,45],[-76,44],[-79,43],[-82,42],[-83,46],[-84,46],[-87,48],[-88,48],[-90,48],[-95,49],[-100,49],[-104,49],[-110,49],[-115,49],[-120,49],[-124,49],[-130,54],[-133,55],[-135,59],[-141,60],[-140,65],[-138,68],[-130,70],[-120,70],[-115,72],[-100,73],[-90,73],[-80,73],[-75,68],[-70,63],[-65,60],[-60,58],[-58,56],[-56,54],[-53,52],[-55,48],[-60,47]],
+// Greenland
+[[-20,83],[-30,80],[-44,76],[-55,70],[-48,60],[-42,56],[-44,60],[-50,68],[-56,76],[-20,83]],
+// Alaska
+[[-141,60],[-141,68],[-155,60],[-165,60],[-168,66],[-166,68],[-162,60],[-152,58],[-148,60],[-144,60],[-141,60]],
+// Mexico
+[[-97,26],[-94,22],[-92,18],[-90,18],[-89,16],[-88,16],[-87,16],[-84,16],[-84,18],[-82,10],[-80,8],[-77,8],[-76,8],[-76,9],[-82,8],[-83,10],[-85,12],[-86,14],[-87,15],[-88,16],[-89,17],[-90,18],[-90,16],[-92,16],[-94,18],[-97,22],[-97,26],[-101,22],[-103,18],[-104,20],[-106,22],[-108,26],[-109,24],[-110,24],[-114,32],[-111,31],[-108,31],[-106,32],[-104,30],[-103,29],[-101,30],[-100,28],[-99,27],[-97,26]],
 
-  setInterval(function(){
+// ── SOUTH AMERICA ──
+[[-34,-4],[-35,-5],[-37,-11],[-39,-16],[-40,-20],[-44,-23],[-48,-26],[-50,-29],[-52,-33],[-53,-33],[-55,-30],[-57,-30],[-57,-26],[-55,-22],[-56,-18],[-60,-16],[-60,-13],[-62,-11],[-65,-10],[-70,-11],[-72,-10],[-73,-8],[-72,-5],[-70,-3],[-70,-2],[-65,-1],[-60,-2],[-55,-1],[-52,4],[-50,2],[-48,0],[-44,-3],[-40,-2],[-38,-3],[-34,-4]],
+// Argentina & Chile
+[[-66,-22],[-64,-22],[-62,-24],[-60,-24],[-58,-26],[-56,-28],[-54,-30],[-52,-33],[-53,-35],[-57,-38],[-62,-40],[-65,-43],[-66,-46],[-68,-50],[-68,-54],[-66,-54],[-68,-55],[-70,-52],[-72,-50],[-72,-48],[-70,-46],[-70,-44],[-72,-42],[-72,-38],[-70,-36],[-68,-32],[-70,-30],[-70,-28],[-68,-24],[-66,-22]],
+// Colombia/Venezuela
+[[-74,4],[-72,2],[-70,2],[-68,4],[-66,4],[-64,6],[-62,8],[-60,8],[-60,10],[-64,11],[-66,11],[-70,12],[-72,11],[-72,10],[-70,2],[-70,-2],[-74,-2],[-76,0],[-78,2],[-78,4],[-76,4],[-74,4]],
 
-    apsEl.textContent    = (Math.random()*6+2).toFixed(1);
+// ── EUROPE ──
+// France + Iberia roughly
+[[-9,44],[-6,44],[-2,43],[0,43],[3,43],[5,44],[7,44],[7,47],[7,48],[5,49],[2,51],[0,50],[-2,48],[-4,48],[-5,48],[-5,47],[-4,45],[-5,44],[-9,44]],
+[[-9,44],[-8,42],[-6,40],[-6,38],[-4,38],[-2,36],[0,37],[2,40],[2,42],[0,43],[-2,43],[-6,44],[-9,44]],
+// UK
+[[-5,50],[-3,50],[-1,51],[2,52],[2,53],[0,54],[-1,55],[-2,56],[-4,58],[-5,58],[-6,57],[-5,56],[-4,56],[-3,55],[-2,53],[-4,53],[-5,52],[-5,50]],
+// Germany/BeNeLux/Scandinavia blob
+[[6,47],[8,47],[10,47],[13,47],[15,50],[14,54],[12,56],[10,57],[8,58],[6,58],[5,56],[6,54],[6,52],[5,51],[6,49],[6,48],[6,47]],
+// Norway/Sweden
+[[5,58],[6,58],[8,58],[10,60],[12,62],[14,64],[16,66],[18,68],[20,70],[22,70],[24,68],[26,66],[26,64],[24,62],[24,60],[22,58],[20,56],[18,56],[14,56],[12,56],[10,57],[8,58],[5,58]],
+// Finland
+[[22,60],[24,60],[26,62],[28,64],[30,68],[28,70],[24,68],[22,66],[22,60]],
+// Italy
+[[7,44],[8,44],[10,44],[12,44],[14,42],[16,38],[18,38],[16,40],[14,42],[12,44],[10,44],[7,44]],
+// Greece/Balkans/Poland
+[[14,54],[16,54],[18,54],[20,52],[22,52],[24,52],[26,50],[28,48],[28,46],[26,44],[24,42],[22,40],[20,38],[22,38],[24,38],[26,40],[28,42],[30,46],[28,48],[24,52],[20,54],[16,54],[14,54]],
+// Ukraine
+[[24,48],[26,50],[28,52],[30,52],[34,52],[36,50],[38,48],[36,46],[34,46],[32,46],[30,46],[28,46],[26,48],[24,48]],
+// Turkey
+[[26,42],[28,41],[30,41],[32,41],[34,42],[36,42],[38,40],[40,40],[42,38],[44,37],[42,36],[40,36],[38,36],[36,36],[34,37],[32,37],[30,38],[28,39],[26,41],[26,42]],
 
-    threatEl.textContent = Math.floor(Math.random()*14+8);
+// ── AFRICA ──
+[[-16,16],[-16,12],[-14,10],[-12,8],[-10,6],[-8,4],[-5,5],[-3,4],[0,4],[2,4],[6,4],[8,4],[10,4],[12,4],[14,4],[14,8],[14,12],[14,14],[14,16],[14,20],[14,24],[12,24],[10,22],[10,18],[8,16],[4,14],[2,12],[0,10],[-2,10],[-4,12],[-8,14],[-12,16],[-16,16]],
+// East Africa
+[[14,24],[16,22],[18,18],[22,18],[24,14],[28,12],[34,8],[40,4],[42,2],[44,-2],[44,-6],[40,-10],[38,-12],[36,-16],[36,-20],[34,-24],[30,-26],[28,-28],[26,-28],[24,-30],[22,-32],[18,-34],[16,-34],[18,-30],[20,-28],[22,-26],[24,-22],[26,-20],[28,-18],[28,-14],[30,-10],[32,-6],[34,-2],[36,2],[38,4],[36,6],[34,8],[30,10],[26,10],[22,14],[18,18],[14,20],[14,24]],
+// West Africa more
+[[-16,16],[-14,18],[-12,20],[-10,22],[-8,22],[-6,22],[-4,22],[-2,22],[0,22],[2,22],[4,22],[6,22],[8,20],[10,18],[10,14],[8,14],[6,14],[4,12],[2,12],[0,10],[-2,10],[-4,12],[-8,14],[-12,16],[-16,16]],
+// Madagascar
+[[44,-12],[50,-16],[50,-22],[46,-24],[44,-20],[44,-12]],
 
-    blocked             += Math.floor(Math.random()*6);
+// ── RUSSIA & CENTRAL ASIA ──
+[[30,60],[36,58],[40,60],[44,58],[48,60],[54,60],[60,60],[66,62],[72,60],[78,58],[84,55],[90,54],[96,52],[102,52],[108,52],[114,52],[120,52],[126,52],[132,44],[135,46],[138,48],[140,48],[140,52],[138,54],[136,52],[132,50],[130,44],[128,50],[122,54],[116,54],[110,54],[104,54],[98,55],[92,55],[86,55],[82,56],[78,60],[74,64],[68,66],[62,66],[56,64],[52,64],[48,64],[44,66],[40,68],[36,68],[34,64],[32,62],[30,60]],
+// Kazakhstan / Uzbekistan
+[[50,52],[52,52],[56,52],[60,50],[64,48],[68,50],[72,52],[76,52],[80,50],[80,48],[76,46],[72,44],[68,44],[64,46],[60,46],[56,48],[52,50],[50,52]],
 
-    blockedEl.textContent = blocked.toLocaleString();
+// ── MIDDLE EAST ──
+[[36,36],[38,36],[40,36],[42,38],[44,38],[46,36],[48,34],[50,32],[54,26],[56,24],[58,22],[56,18],[52,18],[48,18],[46,18],[44,18],[42,14],[40,14],[38,14],[36,16],[36,18],[36,22],[34,28],[34,32],[36,36]],
+// Arabian Peninsula
+[[36,16],[38,14],[40,13],[42,13],[44,14],[46,16],[48,18],[50,22],[55,24],[57,24],[58,22],[56,20],[54,18],[52,18],[50,18],[48,18],[46,18],[44,18],[42,14],[40,13],[38,14],[36,16]],
 
-    sourceEl.textContent  = sources[Math.floor(Math.random()*sources.length)];
+// ── SOUTH ASIA ──
+// India
+[[66,24],[68,24],[70,22],[72,20],[74,18],[76,8],[80,8],[80,12],[80,16],[82,18],[84,20],[86,22],[88,24],[90,26],[92,26],[94,28],[96,28],[96,26],[94,22],[92,24],[90,22],[88,22],[86,20],[84,18],[80,14],[78,10],[76,8],[74,14],[72,20],[70,22],[68,24],[66,24]],
+// Sri Lanka
+[[80,6],[82,8],[82,6],[80,6]],
+// Pakistan
+[[60,24],[62,26],[64,26],[66,24],[68,24],[70,24],[72,26],[74,28],[76,30],[76,34],[74,36],[72,36],[70,36],[68,34],[66,32],[64,30],[62,28],[60,26],[60,24]],
+// Bangladesh/Myanmar
+[[88,22],[90,22],[92,22],[94,24],[96,22],[98,20],[100,18],[98,16],[96,16],[94,18],[92,20],[90,22],[88,22]],
 
-  }, 1200);
+// ── EAST/SE ASIA ──
+// China
+[[76,36],[80,36],[84,36],[88,32],[92,30],[94,28],[96,28],[98,24],[100,22],[102,22],[104,22],[106,22],[108,20],[110,20],[110,22],[112,22],[114,24],[116,24],[118,24],[120,26],[122,28],[122,32],[120,28],[118,26],[114,24],[110,22],[110,20],[108,18],[106,20],[104,20],[102,22],[100,22],[98,22],[96,24],[94,24],[92,26],[90,26],[88,26],[86,24],[84,24],[80,30],[78,32],[76,34],[76,36]],
+// Korean Peninsula
+[[124,36],[126,34],[128,34],[130,36],[130,38],[128,40],[126,40],[124,40],[122,38],[124,36]],
+// Japan
+[[130,31],[130,33],[132,34],[134,35],[136,36],[138,37],[140,38],[141,40],[141,43],[140,44],[142,44],[145,44],[143,42],[140,38],[136,34],[132,32],[130,31]],
+// Hokkaido
+[[140,42],[142,44],[145,44],[143,44],[141,43],[140,42]],
+// SE Asia mainland (Vietnam/Thailand/Cambodia/Laos)
+[[100,20],[102,20],[104,22],[106,22],[108,20],[106,18],[106,16],[106,14],[108,12],[106,10],[104,10],[102,10],[100,12],[100,14],[100,16],[98,16],[96,14],[96,16],[98,18],[100,20]],
+// Thailand/Malaysia
+[[100,6],[102,4],[104,2],[104,4],[102,6],[100,8],[100,10],[102,12],[100,14],[98,14],[98,12],[96,12],[98,10],[100,8],[100,6]],
+// Indonesia (Sumatra/Java/Borneo simplified)
+[[96,4],[98,4],[100,2],[102,2],[104,0],[106,-2],[108,-4],[110,-6],[112,-6],[114,-8],[116,-8],[118,-8],[120,-8],[120,-4],[118,-4],[116,-4],[114,-2],[112,-2],[110,-2],[108,0],[106,2],[104,2],[102,2],[100,2],[98,2],[96,4]],
+// Borneo
+[[108,2],[110,2],[114,4],[116,6],[118,4],[116,2],[114,2],[112,2],[110,0],[108,0],[108,2]],
+// Philippines
+[[118,16],[120,16],[122,16],[122,14],[120,12],[118,12],[116,12],[118,14],[118,16]],
+// Taiwan
+[[120,22],[122,22],[122,24],[120,24],[120,22]],
+
+// ── OCEANIA ──
+// Australia
+[[114,-22],[116,-20],[118,-20],[122,-18],[128,-14],[130,-12],[136,-12],[138,-16],[140,-18],[142,-14],[146,-18],[150,-22],[152,-24],[154,-28],[154,-30],[152,-32],[150,-34],[148,-36],[146,-38],[144,-38],[142,-38],[138,-36],[136,-34],[132,-32],[128,-34],[124,-34],[120,-34],[116,-32],[114,-26],[114,-22]],
+// New Zealand
+[[166,-46],[168,-44],[170,-42],[172,-40],[174,-38],[172,-36],[170,-36],[168,-38],[166,-40],[166,-42],[166,-46]],
+// New Guinea
+[[132,-2],[134,-2],[136,-4],[138,-4],[140,-8],[138,-8],[136,-6],[134,-4],[132,-2]],
+];
+
+// City nodes  [label, lon, lat, color, size]
+var CITIES = [
+  ["JAKARTA",     106.8, -6.2,  "#00e5ff", 4.5],
+  ["WASHINGTON",  -77.0,  38.9, "#ff2d55", 4.0],
+  ["LONDON",       -0.1,  51.5, "#00e5ff", 4.0],
+  ["MOSCOW",       37.6,  55.7, "#ff2d55", 4.2],
+  ["BEIJING",     116.4,  39.9, "#ff2d55", 4.5],
+  ["TOKYO",       139.7,  35.7, "#00e5ff", 4.0],
+  ["BERLIN",       13.4,  52.5, "#00e5ff", 3.5],
+  ["SINGAPORE",   103.8,   1.3, "#00e5ff", 3.8],
+  ["LAGOS",         3.4,   6.5, "#ffb700", 3.5],
+  ["SÃO PAULO",  -46.6, -23.6, "#00e5ff", 3.8],
+  ["SYDNEY",      151.2, -33.9, "#00e5ff", 3.8],
+  ["TORONTO",     -79.3,  43.7, "#00e5ff", 3.5],
+  ["DUBAI",        55.3,  25.2, "#ffb700", 3.5],
+  ["MUMBAI",       72.9,  19.1, "#ffb700", 3.5],
+  ["SEOUL",       127.0,  37.6, "#00e5ff", 3.5],
+  ["TEHRAN",       51.4,  35.7, "#ff2d55", 3.5],
+  ["PYONGYANG",   125.7,  39.0, "#ff2d55", 3.5],
+  ["SHANGHAI",    121.5,  31.2, "#ff2d55", 4.0],
+  ["CAIRO",        31.2,  30.1, "#ffb700", 3.5],
+  ["BOGOTÁ",     -74.1,   4.6, "#00e5ff", 3.5],
+  ["PARIS",        2.35,  48.9, "#00e5ff", 3.5],
+  ["ROME",         12.5,  41.9, "#00e5ff", 3.2],
+  ["RIYADH",       46.7,  24.7, "#ffb700", 3.5],
+  ["KYIV",         30.5,  50.5, "#00e5ff", 3.5],
+  ["ISLAMABAD",    73.0,  33.7, "#ffb700", 3.2],
+];
+
+// Attack pairs [src_idx, dst_idx]
+var PAIRS = [
+  [3,1],[4,1],[16,1],[15,1],[3,2],[4,0],[5,1],[4,2],
+  [8,1],[11,0],[9,2],[10,7],[12,0],[13,2],[17,0],
+  [3,6],[4,7],[15,6],[16,4],[18,2],[5,0],[0,1],
+  [17,2],[3,7],[4,6],[15,0],[16,1],[22,2],[24,1],
+  [1,3],[2,4],[6,3],[7,4],[9,0],[10,1],[19,2],
+];
+
+var missiles = [];
+var explosions = [];
+var lastSpawn = 0;
+
+function spawnM(){
+  var pr = PAIRS[Math.floor(Math.random()*PAIRS.length)];
+  var s  = CITIES[pr[0]], d = CITIES[pr[1]];
+  var sp = proj(s[1],s[2]), dp = proj(d[1],d[2]);
+  var col = s[3];
+  missiles.push({ sx:sp[0],sy:sp[1],dx:dp[0],dy:dp[1], p:0, spd:0.0018+Math.random()*0.0015, col:col, trail:[], done:false });
+}
+
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+function mapFrame(){
+  mCtx.clearRect(0,0,MW,MH);
+
+  // Grid
+  mCtx.save();
+  mCtx.strokeStyle='rgba(0,229,255,0.035)';
+  mCtx.lineWidth=0.5;
+  for(var lon=-180;lon<=180;lon+=20){
+    var p1=proj(lon,-85),p2=proj(lon,85);
+    mCtx.beginPath(); mCtx.moveTo(p1[0],p1[1]); mCtx.lineTo(p2[0],p2[1]); mCtx.stroke();
+  }
+  for(var lat=-80;lat<=80;lat+=20){
+    mCtx.beginPath();
+    for(var l=-180;l<=180;l+=5){ var pp=proj(l,lat); if(l===-180)mCtx.moveTo(pp[0],pp[1]); else mCtx.lineTo(pp[0],pp[1]); }
+    mCtx.stroke();
+  }
+  mCtx.restore();
+
+  // Land fills
+  LAND.forEach(function(ring){
+    mCtx.beginPath();
+    ring.forEach(function(pt,i){
+      var px=proj(pt[0],pt[1]);
+      if(i===0) mCtx.moveTo(px[0],px[1]); else mCtx.lineTo(px[0],px[1]);
+    });
+    mCtx.closePath();
+    mCtx.fillStyle='rgba(0,229,255,0.055)';
+    mCtx.strokeStyle='rgba(0,229,255,0.32)';
+    mCtx.lineWidth=0.7;
+    mCtx.fill(); mCtx.stroke();
+  });
+
+  // Spawn missiles
+  var now = Date.now();
+  if(now-lastSpawn>2800){ spawnM(); lastSpawn=now; }
+
+  // Draw missiles
+  missiles = missiles.filter(function(m){ return !m.done; });
+  missiles.forEach(function(m){
+    m.p = Math.min(1, m.p + m.spd);
+    var cx=(m.sx+m.dx)/2;
+    var dist=Math.hypot(m.dx-m.sx,m.dy-m.sy);
+    var cy=Math.min(m.sy,m.dy)-dist*0.28;
+    var t=m.p;
+    var px=(1-t)*(1-t)*m.sx+2*(1-t)*t*cx+t*t*m.dx;
+    var py=(1-t)*(1-t)*m.sy+2*(1-t)*t*cy+t*t*m.dy;
+    m.trail.push([px,py]);
+    if(m.trail.length>44) m.trail.shift();
+
+    // Trail glow
+    for(var i=1;i<m.trail.length;i++){
+      var a=i/m.trail.length;
+      mCtx.beginPath();
+      mCtx.moveTo(m.trail[i-1][0],m.trail[i-1][1]);
+      mCtx.lineTo(m.trail[i][0],m.trail[i][1]);
+      var alpha=a*0.8;
+      mCtx.strokeStyle=m.col.replace('#','');
+      // parse hex to rgb for alpha
+      var r=parseInt(m.col.slice(1,3),16), g=parseInt(m.col.slice(3,5),16), b=parseInt(m.col.slice(5,7),16);
+      mCtx.strokeStyle='rgba('+r+','+g+','+b+','+alpha+')';
+      mCtx.lineWidth=a*2.4;
+      mCtx.shadowColor=m.col; mCtx.shadowBlur=5*a;
+      mCtx.stroke();
+    }
+    mCtx.shadowBlur=0;
+
+    // Missile head
+    var angle=0;
+    if(m.trail.length>1){ var prev=m.trail[m.trail.length-2]; angle=Math.atan2(py-prev[1],px-prev[0]); }
+    mCtx.save(); mCtx.translate(px,py); mCtx.rotate(angle);
+    mCtx.beginPath(); mCtx.moveTo(7,0); mCtx.lineTo(0,-3); mCtx.lineTo(-4,0); mCtx.lineTo(0,3); mCtx.closePath();
+    var mr=parseInt(m.col.slice(1,3),16),mg=parseInt(m.col.slice(3,5),16),mb=parseInt(m.col.slice(5,7),16);
+    mCtx.fillStyle=m.col; mCtx.shadowColor=m.col; mCtx.shadowBlur=14; mCtx.fill(); mCtx.restore(); mCtx.shadowBlur=0;
+
+    if(m.p>=1){ m.done=true; explosions.push({x:m.dx,y:m.dy,col:m.col,r:0,a:1}); }
+  });
+
+  // Explosions
+  explosions=explosions.filter(function(e){return e.a>0.02;});
+  explosions.forEach(function(e){
+    e.r+=1.1; e.a-=0.033;
+    var er=parseInt(e.col.slice(1,3),16),eg=parseInt(e.col.slice(3,5),16),eb=parseInt(e.col.slice(5,7),16);
+    mCtx.beginPath(); mCtx.arc(e.x,e.y,e.r,0,Math.PI*2);
+    mCtx.strokeStyle='rgba('+er+','+eg+','+eb+','+e.a+')';
+    mCtx.lineWidth=1.8; mCtx.shadowColor=e.col; mCtx.shadowBlur=16; mCtx.stroke(); mCtx.shadowBlur=0;
+    if(e.r<8){ mCtx.beginPath(); mCtx.arc(e.x,e.y,e.r*0.5,0,Math.PI*2); mCtx.fillStyle='rgba('+er+','+eg+','+eb+','+(e.a*.7)+')'; mCtx.fill(); }
+    // Second ring
+    if(e.r>10){
+      mCtx.beginPath(); mCtx.arc(e.x,e.y,e.r*.6,0,Math.PI*2);
+      mCtx.strokeStyle='rgba('+er+','+eg+','+eb+','+(e.a*.4)+')';
+      mCtx.lineWidth=0.8; mCtx.stroke();
+    }
+  });
+
+  // City nodes
+  var t = Date.now()/1000;
+  CITIES.forEach(function(c,idx){
+    var p=proj(c[1],c[2]);
+    var col=c[3];
+    var cr=parseInt(col.slice(1,3),16),cg=parseInt(col.slice(3,5),16),cb=parseInt(col.slice(5,7),16);
+    var pulse=0.5+0.5*Math.sin(t*2.2+idx*0.7);
+
+    // Outer ring
+    mCtx.beginPath(); mCtx.arc(p[0],p[1],c[4]+5*pulse,0,Math.PI*2);
+    mCtx.strokeStyle='rgba('+cr+','+cg+','+cb+','+(0.25*pulse)+')';
+    mCtx.lineWidth=0.8; mCtx.stroke();
+
+    // Core
+    mCtx.beginPath(); mCtx.arc(p[0],p[1],c[4],0,Math.PI*2);
+    mCtx.fillStyle=col; mCtx.shadowColor=col; mCtx.shadowBlur=10; mCtx.fill(); mCtx.shadowBlur=0;
+
+    // Label
+    mCtx.fillStyle='rgba('+cr+','+cg+','+cb+',0.75)';
+    mCtx.font='bold 8px JetBrains Mono, monospace';
+    mCtx.fillText(c[0], p[0]+c[4]+4, p[1]+3);
+  });
+
+  requestAnimationFrame(mapFrame);
+}
+mapFrame();
+
+// ── Reveal on scroll
+var revs=document.querySelectorAll('.reveal');
+var obs=new IntersectionObserver(function(en){en.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');obs.unobserve(e.target);}});},{threshold:.1});
+revs.forEach(function(el){obs.observe(el);});
+
+// ── Nav smooth scroll
+document.querySelectorAll('.nav-links a[href^="#"]').forEach(function(a){
+  a.addEventListener('click',function(e){
+    var t=document.querySelector(this.getAttribute('href'));
+    if(t){e.preventDefault();window.scrollTo({top:t.getBoundingClientRect().top+pageYOffset-68,behavior:'smooth'});}
+  });
+});
+
+// ── HUD counters
+var aps=document.getElementById('h-aps'),thr=document.getElementById('h-thr'),blk=document.getElementById('h-blk'),src=document.getElementById('h-src');
+var srcs=['RUSSIA','CHINA','N.KOREA','IRAN','UNKNOWN'];
+var blocked=12418;
+setInterval(function(){
+  if(aps) aps.textContent=(Math.random()*6+2).toFixed(1);
+  if(thr) thr.textContent=Math.floor(Math.random()*14+8);
+  blocked+=Math.floor(Math.random()*5+1);
+  if(blk) blk.textContent=blocked.toLocaleString();
+  if(src) src.textContent=srcs[Math.floor(Math.random()*srcs.length)];
+},1300);
 
 })();
-
 </script>
-
 </body>
-
 </html>
