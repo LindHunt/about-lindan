@@ -159,6 +159,18 @@ a.l-row:hover{background:rgba(0,229,255,.04);}
 .cve-bar .mono{color:#fff;font-weight:600;font-size:.9rem;}
 .cve-bar .sub{font-size:.78rem;color:var(--dim);}
 
+/* csirt / government certificates */
+.sub-h{font-family:'Orbitron',sans-serif;font-size:1.02rem;font-weight:700;color:#fff;margin:2.8rem 0 .5rem;}
+.sub-lead{font-size:.83rem;color:var(--muted);margin-bottom:1.2rem;max-width:640px;}
+.csirt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.8rem;}
+.csirt-card{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--cyan);border-radius:6px;padding:.8rem 1rem;backdrop-filter:blur(10px);transition:border-color .15s,box-shadow .15s;}
+.csirt-card:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(0,229,255,.12);}
+.csirt-card.media{border-left-color:var(--amber);}
+.csirt-card.mil{border-left-color:var(--green);}
+.csirt-name{font-size:.88rem;font-weight:600;color:var(--text);}
+.csirt-tag{font-family:'JetBrains Mono',monospace;font-size:.62rem;color:var(--dim);margin-top:.15rem;}
+.csirt-note{font-size:.78rem;color:var(--dim);margin-top:1.1rem;max-width:720px;}
+
 /* chips */
 .chips{display:flex;flex-wrap:wrap;gap:.6rem;}
 .chip{background:var(--panel);border:1px solid var(--border);border-left:2px solid var(--cyan);border-radius:5px;padding:.48rem .95rem;font-size:.83rem;font-weight:500;color:#cde4f0;backdrop-filter:blur(8px);transition:all .15s;}
@@ -182,6 +194,7 @@ a.l-row:hover{background:rgba(0,229,255,.04);}
 
 footer{border-top:1px solid var(--border);padding:2.2rem 0;text-align:center;color:var(--dim);font-size:.82rem;margin-top:2rem;}
 footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains Mono',monospace;}
+footer .tag{font-size:.78rem;margin-top:.7rem;font-style:italic;color:var(--muted);}
 
 .reveal{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease;}
 .reveal.in{opacity:1;transform:none;}
@@ -191,7 +204,8 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
   .c-grid{grid-template-columns:1fr;}
   .nav-links{display:none;}
 }
-@media(max-width:560px){.wrap{padding:0 1.1rem;}.hero h1{font-size:1.75rem;}}
+@media(max-width:560px){.wrap{padding:0 1.1rem;}.hero h1{font-size:1.75rem;}.csirt-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:400px){.csirt-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -217,6 +231,7 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
     <div class="nav-links">
       <a href="#about">About</a>
       <a href="#recognition">Recognition</a>
+      <a href="#csirt">CSIRT</a>
       <a href="#skills">Skills</a>
       <a href="#tools">Tools</a>
       <a href="#certifications">Certifications</a>
@@ -271,8 +286,8 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
     <div class="hud-div"></div>
     <div class="hud-ticker">
       <div class="hud-ticker-in">
-        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span><span>·</span>
-        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span>
+        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span><span>·</span><span>15 CSIRT / VDP Certificates</span><span>·</span>
+        <span>CVE-2026-18741 DISCOVERED</span><span>·</span><span>CVE-2026-26211 DISCOVERED</span><span>·</span><span>DoD Hall of Fame ×2</span><span>·</span><span>NASA VDP ×5</span><span>·</span><span>WHO Hall of Fame</span><span>·</span><span>UNESCO Hall of Fame</span><span>·</span><span>DHS Bugcrowd VDP</span><span>·</span><span>Deutsche Telekom HoF</span><span>·</span><span>15 CSIRT / VDP Certificates</span>
       </div>
     </div>
   </div>
@@ -281,7 +296,7 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
     <h2><span class="idx">01</span>About</h2>
     <div class="panel">
       <p>I am active in the field of Cyber Security and continuously expanding my knowledge and skills in Web Application Security, Offensive Security, Threat Intelligence, OSINT, and SOCMINT.</p>
-      <p>My activities include attack surface analysis, vulnerability identification and validation, vulnerability research, penetration testing, and OSINT/SOCMINT investigations.</p>
+      <p>My activities include attack surface analysis, vulnerability identification and validation, vulnerability research, penetration testing, and OSINT/SOCMINT investigations, conducted in a realistic and responsible manner.</p>
       <p>Some of my security findings and research have received recognition from various international organizations and institutions, and I am also credited with the discovery of <a href="https://www.cve.org/CVERecord?id=CVE-2026-18741" target="_blank" rel="noopener" class="mono cve-link">CVE-2026-18741</a> and <a href="https://www.cve.org/CVERecord?id=CVE-2026-26211" target="_blank" rel="noopener" class="mono cve-link">CVE-2026-26211</a>.</p>
     </div>
   </section>
@@ -312,6 +327,28 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
       </a>
       <div class="sub" style="padding-top:.2rem;">And other recognitions from various international organizations &amp; institutions — see LinkedIn / Instagram for more.</div>
     </div>
+
+    <!-- CSIRT, GOVERNMENT & INSTITUTIONAL CERTIFICATES (VDP) -->
+    <h3 class="sub-h" id="csirt">CSIRT, Government &amp; Institutional Certificates (VDP)</h3>
+    <p class="sub-lead">Certificates awarded for responsibly reporting vulnerabilities through Vulnerability Disclosure Programs run by Indonesian government CSIRTs, the military, and media organizations.</p>
+    <div class="csirt-grid">
+      <div class="csirt-card mil"><div class="csirt-name">Indonesian Army (TNI AD)</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">CSIRT Jakarta.go.id</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Kukar Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Bantul Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Pontianak CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Sukoharjo Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Titis – Blitar Kab</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Banjarnegara Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Gunungkidul Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Cilacap Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Purbalingga Kab CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Kota Bekasi CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Jabar Prov CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card"><div class="csirt-name">Sulteng Prov CSIRT</div><div class="csirt-tag">Certificate</div></div>
+      <div class="csirt-card media"><div class="csirt-name">Detik.com</div><div class="csirt-tag">Certificate</div></div>
+    </div>
+    <p class="csirt-note">All certificates awarded for responsibly reporting vulnerabilities through VDP programs. And other recognitions from various international organizations &amp; institutions — see LinkedIn / Instagram for more.</p>
   </section>
 
   <section class="section reveal" id="skills">
@@ -351,6 +388,7 @@ footer .mo{font-size:.68rem;margin-top:.4rem;opacity:.65;font-family:'JetBrains 
   <footer>
     <p>LINDAN TRI SAPUTRA — Cyber Security &amp; Offensive Security</p>
     <div class="mo">web application security · osint · socmint · threat intelligence</div>
+    <div class="tag">"Attack surface analysis. Vulnerability validation. Responsible disclosure."</div>
   </footer>
 
 </div>
